@@ -5,6 +5,7 @@ import Users from "../pages/Users";
 import Committees from "../pages/Comittees";
 import Documents from "../pages/Documents";
 import UserDetails from "../pages/UserDetails";
+import CommitteeDetails from "../pages/CommitteeDetails";
 
 function PrivateRoute({ children }) {
   // Better: check token instead of "auth"
@@ -33,6 +34,7 @@ export default function AppRouter() {
           <Route path="users/:id" element={<UserDetails />} />
           <Route path="committees" element={<Committees />} />
           <Route path="documents" element={<Documents />} />
+          <Route path="committees/:id" element={<CommitteeDetails />} />
           <Route
             index
             element={<h2 className="text-xl">Select an option from the sidebar</h2>}
