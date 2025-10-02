@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import api from "../services/api";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -13,20 +13,23 @@ export default function Login() {
     setLoading(true);
 
     try {
-      const res = await axios.post("http://localhost:8080/api/auth/login", 
-        {email, password,},
-        {withCredentials: true }   // 👈 include cookies
-    );
+      const res = await api.post("/auth/login", { email, password }, {withCredentials: true } );
+
+      console.log('res.data', res.data)
 
       localStorage.setItem("auth", "true");  // 👈 add this
       localStorage.setItem("token", res.data.token);
       localStorage.setItem("user", JSON.stringify(res.data.user));
 
-
       if (res.status === 200) {
+        const user = res.data.user;
         console.log('res.satatus', res.status)
-        // 👇 redirect user after successful login
-        navigate("/dashboard");
+        // 👇 Redirect depending on level
+        if (user.level === "Level 1") {
+          navigate("/dashboard/documents"); // go straight to documents
+        } else {
+          navigate("/dashboard/users"); // normal dashboard
+        }
       }
       // redirect
     } catch (err) {

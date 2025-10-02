@@ -1,16 +1,29 @@
 import { useState } from "react";
 import { Link, Outlet, useLocation } from "react-router-dom";
-import { Users, FileText, Layers, ChevronLeft, ChevronRight } from "lucide-react";
+import { Users, FileText, Layers, ChevronLeft, ChevronRight, LogOut, Inbox, MessageSquare, Activity } from "lucide-react";
 
 export default function Dashboard() {
   const [collapsed, setCollapsed] = useState(false);
   const location = useLocation();
 
-  const navItems = [
+  // Get user from localStorage
+  const storedUser = JSON.parse(localStorage.getItem("user"));
+
+  // Base navigation items
+  const baseNavItems = [
     { to: "users", label: "Users", icon: <Users size={20} /> },
     { to: "committees", label: "Committees", icon: <Layers size={20} /> },
     { to: "documents", label: "Documents", icon: <FileText size={20} /> },
+    { to: "logs", label: "Logs", icon: <Activity size={20} /> },
+    { to: "communication", label: "Communication", icon: <MessageSquare size={20} /> },
+    { to: "inbox", label: "Inbox", icon: <Inbox size={20} /> },
   ];
+
+  // Restrict menu based on user level
+  const navItems =
+    storedUser?.level === "Level 1"
+      ? baseNavItems.filter((item) => item.to === "documents") // only documents for Level 1
+      : baseNavItems;
 
   return (
     <div className="h-screen flex">
@@ -44,6 +57,17 @@ export default function Dashboard() {
               )}
             </Link>
           ))}
+
+          {/* Logout Button */}
+          <button
+            onClick={() => {
+              localStorage.clear(); // clear auth data
+              window.location.href = "/login"; // redirect to login
+            }}
+            className="mt-auto flex items-center justify-center px-4 py-2 w-full hover:bg-red-600 rounded transition"
+          >
+            <LogOut className="text-red-500 hover:text-white" size={20} />
+          </button>
         </nav>
       </div>
 

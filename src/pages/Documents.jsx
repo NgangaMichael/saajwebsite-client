@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { Pencil, Trash2, Eye, Plus } from "lucide-react";
-import { useNavigate } from "react-router-dom";
 import api from "../services/api";
 import {
   getDocuments,
@@ -14,13 +13,16 @@ import EditDocumentModal from "../components/EditDocumentModal";
 export default function Documents() {
   const [docs, setDocs] = useState([]);
   const [loading, setLoading] = useState(true);
-
   const [adding, setAdding] = useState(false);
   const [editingDoc, setEditingDoc] = useState(null);
 
+  // Get user from localStorage
+  const storedUser = JSON.parse(localStorage.getItem("user"));
+  const userLevel = storedUser?.level || "";
+
   const [newDoc, setNewDoc] = useState({
     documentName: "",
-    uploadedBy: "",
+    uploadedBy: storedUser?.username || storedUser?.email || "", // ✅ auto-fill
     description: "",
     file: null,
   });
@@ -31,7 +33,6 @@ export default function Documents() {
     description: "",
   });
 
-  const navigate = useNavigate();
 
   // Fetch documents
   const fetchDocs = async () => {
@@ -67,24 +68,7 @@ export default function Documents() {
   const handleFileChange = (e) => {
     setNewDoc((prev) => ({ ...prev, file: e.target.files[0] }));
   };
-  // const addDocument = async () => {
-  //   try {
-  //     const form = new FormData();
-  //     form.append("documentName", newDoc.documentName);
-  //     form.append("uploadedBy", newDoc.uploadedBy);
-  //     form.append("description", newDoc.description);
-  //     if (newDoc.file) form.append("file", newDoc.file);
 
-  //     const data = await apiAddDocument(form);
-  //     setDocs((prev) => [...prev, data.data]);
-  //     setAdding(false);
-  //     setNewDoc({ documentName: "", uploadedBy: "", description: "", file: null });
-  //   } catch (err) {
-  //     console.error("Error adding:", err);
-  //   }
-  // };
-
-  // inside Documents.jsx
   const addDocument = async () => {
     try {
       const form = new FormData();
@@ -93,15 +77,14 @@ export default function Documents() {
       form.append("description", newDoc.description);
       if (newDoc.file) form.append("file", newDoc.file);
 
-      const data = await apiAddDocument(form);  // ✅ pass FormData directly
+      const data = await apiAddDocument(form);
       setDocs((prev) => [...prev, data.data]);
       setAdding(false);
-      setNewDoc({ documentName: "", uploadedBy: "", description: "", file: null });
+      setNewDoc({ documentName: "", uploadedBy: storedUser?.username || "", description: "", file: null });
     } catch (err) {
       console.error("Error adding:", err);
     }
   };
-
 
   // Edit handlers
   const editDoc = (doc) => {
@@ -125,16 +108,14 @@ export default function Documents() {
     }
   };
 
-  // inside Documents.jsx
+  // View
   const viewDocument = (doc) => {
     if (doc.path) {
-      // open in new tab
-    window.open(`${api.defaults.baseURL}${doc.path}`, "_blank");
+      window.open(`${api.defaults.baseURL}${doc.path}`, "_blank");
     } else {
       alert("No document file found!");
     }
   };
-
 
   if (loading) return <p className="p-6">Loading documents...</p>;
 
@@ -142,12 +123,16 @@ export default function Documents() {
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-semibold">Documents</h2>
-        <button
-          onClick={() => setAdding(true)}
-          className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700"
-        >
-          <Plus size={18} /> Add Document
-        </button>
+
+        {/* ✅ Hide Add button if Level 1 */}
+        {userLevel !== "Level 1" && (
+          <button
+            onClick={() => setAdding(true)}
+            className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700"
+          >
+            <Plus size={18} /> Add Document
+          </button>
+        )}
       </div>
 
       <div className="overflow-x-auto bg-white rounded-lg shadow border border-gray-200">
@@ -180,22 +165,28 @@ export default function Documents() {
                   <td className="px-4 py-3 border">{doc.type || "-"}</td>
                   <td className="px-4 py-3 border">
                     <div className="flex justify-center gap-3">
+                      {/* ✅ Everyone can view */}
                       <button onClick={() => viewDocument(doc)} className="text-blue-500 hover:text-blue-700">
                         <Eye className="w-5 h-5" />
                       </button>
 
-                      <button
-                        onClick={() => editDoc(doc)}
-                        className="text-blue-600 hover:text-blue-800"
-                      >
-                        <Pencil size={18} />
-                      </button>
-                      <button
-                        onClick={() => deleteDoc(doc.id)}
-                        className="text-red-600 hover:text-red-800"
-                      >
-                        <Trash2 size={18} />
-                      </button>
+                      {/* ✅ Hide Edit/Delete for Level 1 */}
+                      {userLevel !== "Level 1" && (
+                        <>
+                          <button
+                            onClick={() => editDoc(doc)}
+                            className="text-blue-600 hover:text-blue-800"
+                          >
+                            <Pencil size={18} />
+                          </button>
+                          <button
+                            onClick={() => deleteDoc(doc.id)}
+                            className="text-red-600 hover:text-red-800"
+                          >
+                            <Trash2 size={18} />
+                          </button>
+                        </>
+                      )}
                     </div>
                   </td>
                 </tr>
