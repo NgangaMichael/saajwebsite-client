@@ -139,7 +139,7 @@ export default function Documents() {
         <table className="min-w-full text-sm">
           <thead>
             <tr className="bg-gray-100 text-gray-700 text-left">
-              <th className="px-4 py-3 border">ID</th>
+              <th className="px-4 py-3 border">#</th>
               <th className="px-4 py-3 border">Name</th>
               <th className="px-4 py-3 border">Uploaded By</th>
               <th className="px-4 py-3 border">Type</th>
@@ -159,7 +159,7 @@ export default function Documents() {
                   key={doc.id}
                   className={`${idx % 2 === 0 ? "bg-white" : "bg-gray-50"} hover:bg-gray-100`}
                 >
-                  <td className="px-4 py-3 border">{doc.id}</td>
+                  <td className="px-4 py-3 border">{idx+1}</td>
                   <td className="px-4 py-3 border">{doc.documentName}</td>
                   <td className="px-4 py-3 border">{doc.uploadedBy}</td>
                   <td className="px-4 py-3 border">{doc.type || "-"}</td>

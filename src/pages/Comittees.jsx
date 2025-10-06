@@ -155,7 +155,7 @@ export default function Committees() {
         <table className="min-w-full text-sm">
           <thead>
             <tr className="bg-gray-100 text-gray-700 text-left">
-              <th className="px-4 py-3 border">ID</th>
+              <th className="px-4 py-3 border">#</th>
               <th className="px-4 py-3 border">Name</th>
               <th className="px-4 py-3 border">Head</th>
               <th className="px-4 py-3 border">Members</th>
@@ -177,7 +177,7 @@ export default function Committees() {
                     idx % 2 === 0 ? "bg-white" : "bg-gray-50"
                   } hover:bg-gray-100`}
                 >
-                  <td className="px-4 py-3 border">{committee.id}</td>
+                  <td className="px-4 py-3 border">{idx+1}</td>
                   <td className="px-4 py-3 border">{committee.name}</td>
                   <td className="px-4 py-3 border">{committee.head}</td>
                   <td className="px-4 py-3 border">{committee.totalMembers || "-"}</td>

@@ -41,7 +41,7 @@ export default function Logs() {
         <table className="min-w-full text-sm">
           <thead>
             <tr className="bg-gray-100 text-gray-700 text-left">
-              <th className="px-4 py-3 border">ID</th>
+              <th className="px-4 py-3 border">#</th>
               <th className="px-4 py-3 border">Entity</th>
               <th className="px-4 py-3 border">Action</th>
               <th className="px-4 py-3 border">Before</th>
@@ -68,7 +68,7 @@ export default function Logs() {
                     idx % 2 === 0 ? "bg-white" : "bg-gray-50"
                   } hover:bg-gray-100`}
                 >
-                  <td className="px-4 py-3 border">{log.id}</td>
+                  <td className="px-4 py-3 border">{idx+1}</td>
                   <td className="px-4 py-3 border">{log.entity}</td>
                   <td className="px-4 py-3 border">{log.action}</td>
                   <td className="px-4 py-3 border max-w-xs overflow-hidden">

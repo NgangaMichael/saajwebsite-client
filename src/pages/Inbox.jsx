@@ -93,17 +93,17 @@ export default function Inbox() {
   };
 
   // Edit
-  const editComm = (comm) => {
-    setEditingComm(comm);
-    setFormData({
-      memberNumber: comm.memberNumber || "",
-      title: comm.title || "",
-      info: comm.info || "",
-      level: comm.level || "low",
-      postedBy: comm.postedBy || "",
-      to: comm.to || "",
-    });
-  };
+  // const editComm = (comm) => {
+  //   setEditingComm(comm);
+  //   setFormData({
+  //     memberNumber: comm.memberNumber || "",
+  //     title: comm.title || "",
+  //     info: comm.info || "",
+  //     level: comm.level || "low",
+  //     postedBy: comm.postedBy || "",
+  //     to: comm.to || "",
+  //   });
+  // };
 
   const handleEditChange = (e) => {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -166,7 +166,7 @@ export default function Inbox() {
         <table className="min-w-full text-sm">
           <thead>
             <tr className="bg-gray-100 text-gray-700 text-left">
-              <th className="px-4 py-3 border">ID</th>
+              <th className="px-4 py-3 border">#</th>
               <th className="px-4 py-3 border">Title</th>
               <th className="px-4 py-3 border">Level</th>
               <th className="px-4 py-3 border">To</th>
@@ -186,7 +186,7 @@ export default function Inbox() {
                   key={comm.id}
                   className={`${idx % 2 === 0 ? "bg-white" : "bg-gray-50"} hover:bg-gray-100`}
                 >
-                  <td className="px-4 py-3 border">{comm.id}</td>
+                  <td className="px-4 py-3 border">{idx+1}</td>
                   <td className="px-4 py-3 border">{comm.title}</td>
                   <td className="px-4 py-3 border">{comm.level}</td>
                   <td className="px-4 py-3 border">{comm.to}</td>

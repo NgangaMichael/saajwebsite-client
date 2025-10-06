@@ -167,7 +167,7 @@ const editUser = (user) => {
         <table className="min-w-full text-sm">
           <thead>
             <tr className="bg-gray-100 text-gray-700 text-left">
-              <th className="px-4 py-3 border">ID</th>
+              <th className="px-4 py-3 border">#</th>
               <th className="px-4 py-3 border">Username</th>
               <th className="px-4 py-3 border">Email</th>
               <th className="px-4 py-3 border">Committee</th>
@@ -188,7 +188,7 @@ const editUser = (user) => {
                   key={user.id}
                   className={`${idx % 2 === 0 ? "bg-white" : "bg-gray-50"} hover:bg-gray-100`}
                 >
-                  <td className="px-4 py-3 border">{user.id}</td>
+                  <td className="px-4 py-3 border">{idx+1}</td>
                   <td className="px-4 py-3 border">{user.username}</td>
                   <td className="px-4 py-3 border">{user.email}</td>
                   <td className="px-4 py-3 border">{user.committee || "-"}</td>
