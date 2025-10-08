@@ -15,6 +15,7 @@ export default function Documents() {
   const [loading, setLoading] = useState(true);
   const [adding, setAdding] = useState(false);
   const [editingDoc, setEditingDoc] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
 
   // Get user from localStorage
   const storedUser = JSON.parse(localStorage.getItem("user"));
@@ -117,44 +118,52 @@ export default function Documents() {
     }
   };
 
+  const filteredDocuments = docs.filter((u) =>
+    u.documentName?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+
   if (loading) return <p className="p-6">Loading documents...</p>;
 
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-semibold">Documents</h2>
+    <div className="">
+      <div>
 
-        {/* ✅ Hide Add button if Level 1 */}
-        {userLevel !== "Level 1" && (
-          <button
-            onClick={() => setAdding(true)}
-            className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700"
-          >
-            <Plus size={18} /> Add Document
-          </button>
-        )}
+        {userLevel !== "Level 1" && <button className="btn btn-primary btn-sm float-end" onClick={() => setAdding(true)}>Add Document</button>}
+        <input
+          className="form-control float-end w-25 form-control-sm mx-2"
+          type="text"
+          placeholder="Search document..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+
+        <h2 className="h5">Documents</h2>
       </div>
 
-      <div className="overflow-x-auto bg-white rounded-lg shadow border border-gray-200">
-        <table className="min-w-full text-sm">
+      <hr />
+
+      <div className="">
+        <table className="table">
           <thead>
             <tr className="bg-gray-100 text-gray-700 text-left">
               <th className="px-4 py-3 border">#</th>
-              <th className="px-4 py-3 border">Name</th>
+              <th className="px-4 py-3 border">Document</th>
               <th className="px-4 py-3 border">Uploaded By</th>
               <th className="px-4 py-3 border">Type</th>
+              <th className="px-4 py-3 border">Date</th>
               <th className="px-4 py-3 border text-center">Actions</th>
             </tr>
           </thead>
           <tbody>
-            {docs.length === 0 ? (
+            {filteredDocuments.length === 0 ? (
               <tr>
                 <td colSpan="5" className="text-center py-6 text-gray-500 italic">
                   No documents found
                 </td>
               </tr>
             ) : (
-              docs.map((doc, idx) => (
+              filteredDocuments.map((doc, idx) => (
                 <tr
                   key={doc.id}
                   className={`${idx % 2 === 0 ? "bg-white" : "bg-gray-50"} hover:bg-gray-100`}
@@ -163,6 +172,7 @@ export default function Documents() {
                   <td className="px-4 py-3 border">{doc.documentName}</td>
                   <td className="px-4 py-3 border">{doc.uploadedBy}</td>
                   <td className="px-4 py-3 border">{doc.type || "-"}</td>
+                  <td className="px-4 py-3 border">{new Date(doc.createdAt).toLocaleDateString()}</td>
                   <td className="px-4 py-3 border">
                     <div className="flex justify-center gap-3">
                       {/* ✅ Everyone can view */}

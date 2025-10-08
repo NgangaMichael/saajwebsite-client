@@ -14,6 +14,7 @@ import EditCommitteeModal from "../components/EditCommitteeModal";
 export default function Committees() {
   const [committees, setCommittees] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
 
   // Add state
   const [adding, setAdding] = useState(false);
@@ -137,40 +138,50 @@ export default function Committees() {
     );
   }
 
+  const filteredCommittees = committees.filter((u) =>
+    u.name?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
-    <div className="p-6">
+    <div className="">
       {/* Header */}
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-semibold">Committees</h2>
-        <button
-          onClick={() => setAdding(true)}
-          className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition"
-        >
-          <Plus size={18} /> Add Committee
-        </button>
+      <div>
+        <button className="btn btn-primary btn-sm float-end" onClick={() => setAdding(true)}>Add Committee</button>
+        <input
+          className="form-control float-end w-25 form-control-sm mx-2"
+          type="text"
+          placeholder="Search by head..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+
+        <h2 className="h5">Committees</h2>
       </div>
 
+      <hr />
+
       {/* Table */}
-      <div className="overflow-x-auto bg-white rounded-lg shadow border border-gray-200">
-        <table className="min-w-full text-sm">
+      <div className="">
+        <table className="table">
           <thead>
             <tr className="bg-gray-100 text-gray-700 text-left">
               <th className="px-4 py-3 border">#</th>
-              <th className="px-4 py-3 border">Name</th>
+              <th className="px-4 py-3 border">Committee</th>
               <th className="px-4 py-3 border">Head</th>
               <th className="px-4 py-3 border">Members</th>
+              <th className="px-4 py-3 border">Date</th>
               <th className="px-4 py-3 border text-center">Actions</th>
             </tr>
           </thead>
           <tbody>
-            {committees.length === 0 ? (
+            {filteredCommittees.length === 0 ? (
               <tr>
                 <td colSpan="5" className="text-center py-6 text-gray-500 italic">
                   No committees found
                 </td>
               </tr>
             ) : (
-              committees.map((committee, idx) => (
+              filteredCommittees.map((committee, idx) => (
                 <tr
                   key={committee.id}
                   className={`${
@@ -181,6 +192,7 @@ export default function Committees() {
                   <td className="px-4 py-3 border">{committee.name}</td>
                   <td className="px-4 py-3 border">{committee.head}</td>
                   <td className="px-4 py-3 border">{committee.totalMembers || "-"}</td>
+                  <td className="px-4 py-3 border">{new Date(committee.createdAt).toLocaleDateString()}</td>
                   <td className="px-4 py-3 border">
                     <div className="flex justify-center gap-3">
                       <button

@@ -9,6 +9,7 @@ import { getUsers, addUser as apiAddUser, updateUser, deleteUser as apiDeleteUse
 export default function Users() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
 
   // Edit state
   const [editingUser, setEditingUser] = useState(null);
@@ -50,6 +51,10 @@ export default function Users() {
   useEffect(() => {
     fetchUsers();
   }, []);
+
+  const filteredUsers = users.filter((u) =>
+    u.username?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   // Delete user
   const deleteUser = async (id) => {
@@ -150,21 +155,27 @@ const editUser = (user) => {
   }
 
   return (
-    <div className="p-6">
+    <div className="">
       {/* Header */}
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-semibold">Users</h2>
-        <button
-          onClick={() => setAdding(true)}
-          className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition"
-        >
-          <Plus size={18} /> Add User
-        </button>
+      <div>
+        <button className="btn btn-primary btn-sm float-end" onClick={() => setAdding(true)}>Add User</button>
+        <input
+          className="form-control float-end w-25 form-control-sm mx-2"
+          type="text"
+          placeholder="Search by username..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+
+        <h2 className="h5">Users</h2>
       </div>
 
+      <hr />
+      
+     
       {/* Table */}
-      <div className="overflow-x-auto bg-white rounded-lg shadow border border-gray-200">
-        <table className="min-w-full text-sm">
+      <div className="">
+        <table className="table">
           <thead>
             <tr className="bg-gray-100 text-gray-700 text-left">
               <th className="px-4 py-3 border">#</th>
@@ -172,18 +183,19 @@ const editUser = (user) => {
               <th className="px-4 py-3 border">Email</th>
               <th className="px-4 py-3 border">Committee</th>
               <th className="px-4 py-3 border">Designation</th>
+              <th className="px-4 py-3 border">Date</th>
               <th className="px-4 py-3 border text-center">Actions</th>
             </tr>
           </thead>
           <tbody>
-            {users.length === 0 ? (
+            {filteredUsers.length === 0 ? (
               <tr>
                 <td colSpan="6" className="text-center py-6 text-gray-500 italic">
                   No users found
                 </td>
               </tr>
             ) : (
-              users.map((user, idx) => (
+              filteredUsers.map((user, idx) => (
                 <tr
                   key={user.id}
                   className={`${idx % 2 === 0 ? "bg-white" : "bg-gray-50"} hover:bg-gray-100`}
@@ -193,6 +205,7 @@ const editUser = (user) => {
                   <td className="px-4 py-3 border">{user.email}</td>
                   <td className="px-4 py-3 border">{user.committee || "-"}</td>
                   <td className="px-4 py-3 border">{user.designation || "-"}</td>
+                  <td className="px-4 py-3 border">{new Date(user.createdAt).toLocaleDateString()}</td>
                   <td className="px-4 py-3 border">
                     <div className="flex justify-center gap-3">
                       <button

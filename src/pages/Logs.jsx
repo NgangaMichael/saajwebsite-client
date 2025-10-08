@@ -4,6 +4,7 @@ import { getLogs } from "../services/logs";
 export default function Logs() {
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
 
   // Fetch logs
   const fetchLogs = async () => {
@@ -21,6 +22,10 @@ export default function Logs() {
     fetchLogs();
   }, []);
 
+  const filteredLogs = logs.filter((u) =>
+    u.action?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -30,28 +35,38 @@ export default function Logs() {
   }
 
   return (
-    <div className="p-6">
+    <div className="">
       {/* Header */}
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-semibold">System Logs</h2>
+      <div>
+        <input
+          className="form-control float-end w-25 form-control-sm mx-2"
+          type="text"
+          placeholder="Search by title..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+
+        <h2 className="h5">System Logs</h2>
       </div>
 
+      <hr />
+
       {/* Table */}
-      <div className="overflow-x-auto bg-white rounded-lg shadow border border-gray-200">
-        <table className="min-w-full text-sm">
+      <div className="">
+        <table className="table">
           <thead>
             <tr className="bg-gray-100 text-gray-700 text-left">
               <th className="px-4 py-3 border">#</th>
               <th className="px-4 py-3 border">Entity</th>
-              <th className="px-4 py-3 border">Action</th>
-              <th className="px-4 py-3 border">Before</th>
+              {/* <th className="px-4 py-3 border">Action</th>
+              <th className="px-4 py-3 border">Before</th> */}
               <th className="px-4 py-3 border">After</th>
               <th className="px-4 py-3 border">Performed By</th>
               <th className="px-4 py-3 border">Date</th>
             </tr>
           </thead>
           <tbody>
-            {logs.length === 0 ? (
+            {filteredLogs.length === 0 ? (
               <tr>
                 <td
                   colSpan="7"
@@ -61,7 +76,7 @@ export default function Logs() {
                 </td>
               </tr>
             ) : (
-              logs.map((log, idx) => (
+              filteredLogs.map((log, idx) => (
                 <tr
                   key={log.id}
                   className={`${
@@ -71,7 +86,7 @@ export default function Logs() {
                   <td className="px-4 py-3 border">{idx+1}</td>
                   <td className="px-4 py-3 border">{log.entity}</td>
                   <td className="px-4 py-3 border">{log.action}</td>
-                  <td className="px-4 py-3 border max-w-xs overflow-hidden">
+                  {/* <td className="px-4 py-3 border max-w-xs overflow-hidden">
                     <pre className="whitespace-pre-wrap break-all text-xs">
                       {JSON.stringify(log.beforeData, null, 2)}
                     </pre>
@@ -80,7 +95,7 @@ export default function Logs() {
                     <pre className="whitespace-pre-wrap break-all text-xs">
                       {JSON.stringify(log.afterData, null, 2)}
                     </pre>
-                  </td>
+                  </td> */}
                   <td className="px-4 py-3 border">{log.performedBy}</td>
                   <td className="px-4 py-3 border">
                     {new Date(log.createdAt).toLocaleString()}

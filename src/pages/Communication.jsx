@@ -12,6 +12,7 @@ import EditCommunicationModal from "../components/EditCommunicationModal";
 export default function Communication() {
   const [communications, setCommunications] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
 
   // Add state
   const [adding, setAdding] = useState(false);
@@ -142,6 +143,10 @@ export default function Communication() {
     setViewingComm(null);
   };
 
+  const filteredCommunications = communications.filter((u) =>
+    u.title?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -151,37 +156,43 @@ export default function Communication() {
   }
 
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-semibold">Communications</h2>
-        <button
-          onClick={() => setAdding(true)}
-          className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition"
-        >
-          <Plus size={18} /> Add Communication
-        </button>
+    <div className="">
+      <div>
+        <button className="btn btn-primary btn-sm float-end" onClick={() => setAdding(true)}>Add Communication</button>
+        <input
+          className="form-control float-end w-25 form-control-sm mx-2"
+          type="text"
+          placeholder="Search by title..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+
+        <h2 className="h5">Inbox</h2>
       </div>
 
-      <div className="overflow-x-auto bg-white rounded-lg shadow border border-gray-200">
-        <table className="min-w-full text-sm">
+      <hr />
+
+      <div className="">
+        <table className="table">
           <thead>
             <tr className="bg-gray-100 text-gray-700 text-left">
               <th className="px-4 py-3 border">#</th>
               <th className="px-4 py-3 border">Title</th>
               <th className="px-4 py-3 border">Level</th>
               <th className="px-4 py-3 border">To</th>
+              <th className="px-4 py-3 border">Date</th>
               <th className="px-4 py-3 border text-center">Actions</th>
             </tr>
           </thead>
           <tbody>
-            {communications.length === 0 ? (
+            {filteredCommunications.length === 0 ? (
               <tr>
                 <td colSpan="5" className="text-center py-6 text-gray-500 italic">
                   No communications found
                 </td>
               </tr>
             ) : (
-              communications.map((comm, idx) => (
+              filteredCommunications.map((comm, idx) => (
                 <tr
                   key={comm.id}
                   className={`${idx % 2 === 0 ? "bg-white" : "bg-gray-50"} hover:bg-gray-100`}
@@ -190,6 +201,7 @@ export default function Communication() {
                   <td className="px-4 py-3 border">{comm.title}</td>
                   <td className="px-4 py-3 border">{comm.level}</td>
                   <td className="px-4 py-3 border">{comm.to}</td>
+                  <td className="px-4 py-3 border">{new Date(comm.createdAt).toLocaleDateString()}</td>
                   <td className="px-4 py-3 border">
                     <div className="flex justify-center gap-3">
                       <button
