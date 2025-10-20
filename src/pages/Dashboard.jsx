@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, Outlet, useLocation } from "react-router-dom";
-import { Users, FileText, Layers, ChevronLeft, ChevronRight, LogOut, Inbox, MessageSquare, Activity, Settings, Users2 } from "lucide-react";
+import { Users, Puzzle, FileText, Layers, ChevronLeft, ChevronRight, LogOut, Inbox, MessageSquare, Activity, Settings, Users2 } from "lucide-react";
 
 export default function Dashboard() {
   const [collapsed, setCollapsed] = useState(false);
@@ -14,6 +14,7 @@ export default function Dashboard() {
     { to: "profile", label: "Profile", icon: <Settings size={20} />, color: "#228cc5ff" },       // green
     { to: "users", label: "Users", icon: <Users size={20} />, color: "#22c55e" },       // green
     { to: "committees", label: "Committees", icon: <Layers size={20} />, color: "#3b82f6" }, // blue
+    { to: "subcommittees", label: "Sub-Committees", icon: <Puzzle size={20} />, color: "#ff6e07ff" }, // blue
     { to: "documents", label: "SAAJ Documents", icon: <FileText size={20} />, color: "#f59e0b" }, // amber
     { to: "logs", label: "Logs", icon: <Activity size={20} />, color: "#ec4899" },      // pink
     { to: "communication", label: "Send Messsage", icon: <MessageSquare size={20} />, color: "#8b5cf6" }, // purple
@@ -44,21 +45,28 @@ export default function Dashboard() {
         </h4>
         {/* Nav */}
         <nav className="mt-4 space-y-2 flex-1">
-          {navItems.map((item) => (
-            <Link
-              key={item.to}
-              to={item.to}
-              style={{ textDecoration: "none", color: "white" }} //
-              className={`flex items-center px-4 py-2 hover:bg-gray-700 rounded transition ${
-                location.pathname.includes(item.to) ? "bg-gray-700" : ""
-              }`}
-            >
-              <span style={{ color: item.color }}>{item.icon}</span>
-              {!collapsed && (
-                <span className="ml-3 text-sm font-medium">{item.label}</span>
-              )}
-            </Link>
-          ))}
+          {navItems.map((item) => {
+            // split pathname like: "/dashboard/committees"
+            // index 0 = "", index 1 = "dashboard", index 2 = "committees"
+            const currentRoute = location.pathname.split("/")[2];
+            const isActive = currentRoute === item.to;
+
+            return (
+              <Link
+                key={item.to}
+                to={item.to}
+                style={{ textDecoration: "none", color: "white" }}
+                className={`flex items-center px-4 py-2 hover:bg-gray-700 rounded transition ${
+                  isActive ? "bg-gray-700" : ""
+                }`}
+              >
+                <span style={{ color: item.color }}>{item.icon}</span>
+                {!collapsed && (
+                  <span className="ml-3 text-sm font-medium">{item.label}</span>
+                )}
+              </Link>
+            );
+          })}
         </nav>
 
         {/* Logout Button */}

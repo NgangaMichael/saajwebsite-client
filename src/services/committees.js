@@ -25,7 +25,7 @@ export const updateCommittee = async (id, committeeData) => {
 };
 
 // Delete committee
-export const deleteCommittee = async (id) => {
-  const res = await api.delete(`/committees/${id}`);
+export const deleteCommittee = async (id, username) => {
+  const res = await api.delete(`/committees/${id}/${username}`);
   return res.data;
 };

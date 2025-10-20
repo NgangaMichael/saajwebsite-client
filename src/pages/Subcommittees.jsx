@@ -1,28 +1,30 @@
-// src/pages/Committees.jsx
+// src/pages/subcommittees.jsx
 import React, { useEffect, useState } from "react";
 import { Pencil, Trash2, Eye, Plus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import {
-  getCommittees,
-  addCommittee as apiAddCommittee,
-  updateCommittee,
-  deleteCommittee as apiDeleteCommittee,
-} from "../services/committees";
-import AddCommitteeModal from "../components/AddCommitteeModal";
-import EditCommitteeModal from "../components/EditCommitteeModal";
+  getsubCommittees,
+  addsubCommittee as apiAddCommittee,
+  updatesubCommittee,
+  deletesubCommittee as apiDeleteCommittee,
+} from "../services/subcommittees";
+import AddSubCommitteeModal from "../components/AddSubcommitteeModel";
+import EditSubCommitteeModal from "../components/EditSubcommitteeModel";
 
-export default function Committees() {
-  const [committees, setCommittees] = useState([]);
+export default function Subcommittees() {
+  const [subcommittees, setCommittees] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const storedUser = JSON.parse(localStorage.getItem("user"));
 
   // Add state
   const [adding, setAdding] = useState(false);
-  const [newCommittee, setNewCommittee] = useState({
+  const [newSubCommittee, setNewCommittee] = useState({
     name: "",
     head: "",
-    subCommittee: "",
+    committee: "",
+    totalMembers: "",
+    description: "",
   });
 
   // Edit state
@@ -30,18 +32,20 @@ export default function Committees() {
   const [formData, setFormData] = useState({
     name: "",
     head: "",
-    subCommittee: "",
+    committee: "",
+    totalMembers: "",
+    description: "",
   });
 
   const navigate = useNavigate();
 
-  // Fetch committees
+  // Fetch subcommittees
   const fetchCommittees = async () => {
     try {
-      const data = await getCommittees();
+      const data = await getsubCommittees();
       setCommittees(data.data);
     } catch (err) {
-      console.error("Error fetching committees:", err);
+      console.error("Error fetching subcommittees:", err);
     } finally {
       setLoading(false);
     }
@@ -52,13 +56,13 @@ export default function Committees() {
   }, []);
 
   // Delete
-  const deleteCommittee = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this committee?")) return;
+  const deletesubCommittee = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this subcommittee?")) return;
     try {
       await apiDeleteCommittee(id, storedUser.username);
       setCommittees((prev) => prev.filter((c) => c.id !== id));
     } catch (err) {
-      console.error("Error deleting committee:", err);
+      console.error("Error deleting subcommittee:", err);
     }
   };
 
@@ -67,13 +71,13 @@ export default function Committees() {
     setNewCommittee((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
-  const addCommittee = async () => {
+  const addsubCommittee = async () => {
     try {
-      const data = await apiAddCommittee(newCommittee);
+      const data = await apiAddCommittee(newSubCommittee);
       setCommittees((prev) => [...prev, data.data]);
       closeAddModal();
     } catch (err) {
-      console.error("Error adding committee:", err);
+      console.error("Error adding subcommittee:", err);
     }
   };
 
@@ -82,17 +86,21 @@ export default function Committees() {
     setNewCommittee({
       name: "",
       head: "",
-      subCommittee: "",
+      committee: "",
+      totalMembers: "",
+      description: "",
     });
   };
 
   // Edit
-  const editCommittee = (committee) => {
-    setEditingCommittee(committee);
+  const editCommittee = (subcommittee) => {
+    setEditingCommittee(subcommittee);
     setFormData({
-      name: committee.name || "",
-      head: committee.head || "",
-      subCommittee: committee.subCommittee || "",
+      name: subcommittee.name || "",
+      head: subcommittee.head || "",
+      committee: subcommittee.committee || "",
+      totalMembers: subcommittee.totalMembers || "",
+      description: subcommittee.description || "",
     });
   };
 
@@ -100,15 +108,15 @@ export default function Committees() {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
-  const saveCommittee = async () => {
+  const saveSubCommittee = async () => {
     try {
-      const data = await updateCommittee(editingCommittee.id, formData);
+      const data = await updatesubCommittee(editingCommittee.id, formData);
       setCommittees((prev) =>
         prev.map((c) => (c.id === editingCommittee.id ? data.data : c))
       );
       closeEditModal();
     } catch (err) {
-      console.error("Error updating committee:", err);
+      console.error("Error updating subcommittee:", err);
     }
   };
 
@@ -117,19 +125,21 @@ export default function Committees() {
     setFormData({
       name: "",
       head: "",
-      subCommittee: "",
+      committee: "",
+      totalMembers: "",
+      description: "",
     });
   };
 
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
-        <p className="text-gray-600">Loading committees...</p>
+        <p className="text-gray-600">Loading subcommittees...</p>
       </div>
     );
   }
 
-  const filteredCommittees = committees.filter((u) =>
+  const filteredCommittees = subcommittees.filter((u) =>
     u.name?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -137,7 +147,7 @@ export default function Committees() {
     <div className="">
       {/* Header */}
       <div>
-        <button className="btn btn-primary btn-sm float-end" onClick={() => setAdding(true)}>Add Committee</button>
+        <button className="btn btn-primary btn-sm float-end" onClick={() => setAdding(true)}>Add Subcommittee</button>
         <input
           className="form-control float-end w-25 form-control-sm mx-2"
           type="text"
@@ -146,7 +156,7 @@ export default function Committees() {
           onChange={(e) => setSearchTerm(e.target.value)}
         />
 
-        <h2 className="h5">Committees</h2>
+        <h2 className="h5">Subcommittees</h2>
       </div>
 
       <hr />
@@ -157,8 +167,9 @@ export default function Committees() {
           <thead className="table-dark">
             <tr className="">
               <th scope="col">#</th>
-              <th scope="col">Committee</th>
+              <th scope="col">Subcommittee</th>
               <th scope="col">Head</th>
+              <th scope="col">Committee</th>
               <th scope="col">Date</th>
               <th scope="col">Actions</th>
             </tr>
@@ -167,41 +178,42 @@ export default function Committees() {
             {filteredCommittees.length === 0 ? (
               <tr>
                 <td colSpan="6" className="text-center py-6 text-gray-500 italic">
-                  No committees found
+                  No subcommittees found
                 </td>
               </tr>
             ) : (
-              filteredCommittees.map((committee, idx) => (
+              filteredCommittees.map((subcommittee, idx) => (
                 <tr
-                  key={committee.id}
+                  key={subcommittee.id}
                   className={`${
                     idx % 2 === 0 ? "bg-white" : "bg-gray-50"
                   } hover:bg-gray-100`}
                 >
                   <td>{idx+1}</td>
-                  <td>{committee.name}</td>
-                  <td>{committee.head}</td>
-                  <td>{new Date(committee.createdAt).toLocaleDateString()}</td>
+                  <td>{subcommittee.name}</td>
+                  <td>{subcommittee.head}</td>
+                  <td>{subcommittee.committee}</td>
+                  <td>{new Date(subcommittee.createdAt).toLocaleDateString()}</td>
                   <td>
                     <div className="flex justify-center gap-3">
                       <button
-                        onClick={() => navigate(`${committee.id}`)}
+                        onClick={() => navigate(`${subcommittee.id}`)}
                         className="text-green-600 hover:text-green-800 transition"
                         title="View details"
                       >
                         <Eye size={18} />
                       </button>
                       <button
-                        onClick={() => editCommittee(committee)}
+                        onClick={() => editCommittee(subcommittee)}
                         className="text-blue-600 hover:text-blue-800 transition"
-                        title="Edit committee"
+                        title="Edit subcommittee"
                       >
                         <Pencil size={18} />
                       </button>
                       <button
-                        onClick={() => deleteCommittee(committee.id)}
+                        onClick={() => deletesubCommittee(subcommittee.id)}
                         className="text-red-600 hover:text-red-800 transition"
-                        title="Delete committee"
+                        title="Delete subcommittee"
                       >
                         <Trash2 size={18} />
                       </button>
@@ -216,20 +228,20 @@ export default function Committees() {
 
       {/* Add Modal */}
       {adding && (
-        <AddCommitteeModal
-          newCommittee={newCommittee}
+        <AddSubCommitteeModal
+          newSubCommittee={newSubCommittee}
           handleAddChange={handleAddChange}
-          addCommittee={addCommittee}
+          addsubCommittee={addsubCommittee}
           closeAddModal={closeAddModal}
         />
       )}
 
       {/* Edit Modal */}
       {editingCommittee && (
-        <EditCommitteeModal
+        <EditSubCommitteeModal
           formData={formData}
           handleEditChange={handleEditChange}
-          saveCommittee={saveCommittee}
+          saveSubCommittee={saveSubCommittee}
           closeEditModal={closeEditModal}
         />
       )}

@@ -25,7 +25,7 @@ export const updateCommunication = async (id, data) => {
 };
 
 // Delete communication
-export const deleteCommunication = async (id) => {
-  const res = await api.delete(`/communications/${id}`);
+export const deleteCommunication = async (id, username) => {
+  const res = await api.delete(`/communications/${id}/${username}`);
   return res.data;
 };

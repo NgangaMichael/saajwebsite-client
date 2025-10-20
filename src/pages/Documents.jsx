@@ -26,6 +26,8 @@ export default function Documents() {
     uploadedBy: storedUser?.username || storedUser?.email || "", // ✅ auto-fill
     description: "",
     file: null,
+    type: "",      // ✅ added
+    status: 0,     // ✅ added
   });
 
   const [formData, setFormData] = useState({
@@ -55,7 +57,7 @@ export default function Documents() {
   const deleteDoc = async (id) => {
     if (!window.confirm("Delete this document?")) return;
     try {
-      await apiDeleteDocument(id);
+      await apiDeleteDocument(id, storedUser.username);
       setDocs((prev) => prev.filter((d) => d.id !== id));
     } catch (err) {
       console.error("Error deleting:", err);
@@ -71,21 +73,31 @@ export default function Documents() {
   };
 
   const addDocument = async () => {
-    try {
-      const form = new FormData();
-      form.append("documentName", newDoc.documentName);
-      form.append("uploadedBy", newDoc.uploadedBy);
-      form.append("description", newDoc.description);
-      if (newDoc.file) form.append("file", newDoc.file);
+  try {
+    const form = new FormData();
+    form.append("documentName", newDoc.documentName);
+    form.append("uploadedBy", newDoc.uploadedBy);
+    form.append("description", newDoc.description);
+    form.append("type", newDoc.type);
+    form.append("status", newDoc.status);
+    if (newDoc.file) form.append("file", newDoc.file);
 
-      const data = await apiAddDocument(form);
-      setDocs((prev) => [...prev, data.data]);
-      setAdding(false);
-      setNewDoc({ documentName: "", uploadedBy: storedUser?.username || "", description: "", file: null });
-    } catch (err) {
-      console.error("Error adding:", err);
-    }
-  };
+    const data = await apiAddDocument(form);
+    setDocs((prev) => [...prev, data.data]);
+    setAdding(false);
+    setNewDoc({
+      documentName: "",
+      uploadedBy: storedUser?.username || "",
+      description: "",
+      file: null,
+      type: "",
+      status: 0,
+    });
+  } catch (err) {
+    console.error("Error adding:", err);
+  }
+};
+
 
   // Edit handlers
   const editDoc = (doc) => {
@@ -122,6 +134,19 @@ export default function Documents() {
     u.documentName?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const handleStatusToggle = async (doc) => {
+  const newStatus = doc.status === 1 ? 0 : 1;
+  try {
+    setDocs((prev) =>
+      prev.map((d) => (d.id === doc.id ? { ...d, status: newStatus } : d))
+    );
+    await updateDocument(doc.id, { status: newStatus });
+  } catch (err) {
+    console.error("Error updating status:", err);
+  }
+};
+
+
 
   if (loading) return <p className="p-6">Loading documents...</p>;
 
@@ -144,64 +169,90 @@ export default function Documents() {
       <hr />
 
       <div className="">
-        <table className="table">
-          <thead>
-            <tr className="bg-gray-100 text-gray-700 text-left">
-              <th className="px-4 py-3 border">#</th>
-              <th className="px-4 py-3 border">Document</th>
-              <th className="px-4 py-3 border">Uploaded By</th>
-              <th className="px-4 py-3 border">Type</th>
-              <th className="px-4 py-3 border">Date</th>
-              <th className="px-4 py-3 border text-center">Actions</th>
+        <table className="table table-hover table-bordered">
+          <thead className="table-dark">
+            <tr className="">
+              <th scope="col">#</th>
+              <th scope="col">Document</th>
+              <th scope="col">Uploaded By</th>
+              <th scope="col">Type</th>
+              <th scope="col">Date</th>
+              <th scope="col">Actions</th>
             </tr>
           </thead>
           <tbody>
-            {filteredDocuments.length === 0 ? (
-              <tr>
-                <td colSpan="5" className="text-center py-6 text-gray-500 italic">
-                  No documents found
-                </td>
-              </tr>
-            ) : (
-              filteredDocuments.map((doc, idx) => (
-                <tr
-                  key={doc.id}
-                  className={`${idx % 2 === 0 ? "bg-white" : "bg-gray-50"} hover:bg-gray-100`}
-                >
-                  <td className="px-4 py-3 border">{idx+1}</td>
-                  <td className="px-4 py-3 border">{doc.documentName}</td>
-                  <td className="px-4 py-3 border">{doc.uploadedBy}</td>
-                  <td className="px-4 py-3 border">{doc.type || "-"}</td>
-                  <td className="px-4 py-3 border">{new Date(doc.createdAt).toLocaleDateString()}</td>
-                  <td className="px-4 py-3 border">
-                    <div className="flex justify-center gap-3">
-                      {/* ✅ Everyone can view */}
-                      <button onClick={() => viewDocument(doc)} className="text-blue-500 hover:text-blue-700">
-                        <Eye className="w-5 h-5" />
-                      </button>
+            {filteredDocuments
+  // 🧠 Only show:
+  // - status = 1 → everyone
+  // - status = 0 → only Level 3
+  .filter((doc) => {
+    if (doc.status === 1) return true;
+    if (doc.status === 0 && userLevel === "Level 3") return true;
+    return false;
+  })
+  .map((doc, idx) => (
+    <tr
+      key={doc.id}
+      className={`${
+        idx % 2 === 0 ? "bg-white" : "bg-gray-50"
+      } hover:bg-gray-100`}
+    >
+      <td>{idx + 1}</td>
+      <td>{doc.documentName}</td>
+      <td>{doc.uploadedBy}</td>
+      <td>{doc.type || "-"}</td>
+      <td>{new Date(doc.createdAt).toLocaleDateString()}</td>
+      <td>
+        <div className="flex justify-center gap-3">
+          {/* ✅ Everyone can view */}
+          <button
+            onClick={() => viewDocument(doc)}
+            className="text-blue-500 hover:text-blue-700"
+          >
+            <Eye className="w-5 h-5" />
+          </button>
 
-                      {/* ✅ Hide Edit/Delete for Level 1 */}
-                      {userLevel !== "Level 1" && (
-                        <>
-                          <button
-                            onClick={() => editDoc(doc)}
-                            className="text-blue-600 hover:text-blue-800"
-                          >
-                            <Pencil size={18} />
-                          </button>
-                          <button
-                            onClick={() => deleteDoc(doc.id)}
-                            className="text-red-600 hover:text-red-800"
-                          >
-                            <Trash2 size={18} />
-                          </button>
-                        </>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              ))
-            )}
+          {/* ✅ Hide Edit/Delete for Level 1 */}
+          {userLevel !== "Level 1" && (
+            <>
+              <button
+                onClick={() => editDoc(doc)}
+                className="text-blue-600 hover:text-blue-800"
+              >
+                <Pencil size={18} />
+              </button>
+              <button
+                onClick={() => deleteDoc(doc.id)}
+                className="text-red-600 hover:text-red-800"
+              >
+                <Trash2 size={18} />
+              </button>
+
+              {/* ✅ Only Level 3 can toggle Active/Inactive */}
+              {storedUser?.level === "Level 3" && (
+                <input
+                  className="form-check-input ms-2"
+                  type="checkbox"
+                  checked={doc.status === 1}
+                  onChange={() => handleStatusToggle(doc)}
+                  title={doc.status === 1 ? "Active" : "Inactive"}
+                  style={{
+                    boxShadow:
+                      doc.status === 1
+                        ? "0 0 5px 2px rgba(40, 167, 69, 0.6)"
+                        : "0 0 5px 2px rgba(220, 53, 69, 0.4)",
+                    borderColor: doc.status === 1 ? "#28a745" : "#dc3545",
+                    cursor: "pointer",
+                  }}
+                />
+              )}
+            </>
+          )}
+        </div>
+      </td>
+    </tr>
+  ))}
+
           </tbody>
         </table>
       </div>

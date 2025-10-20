@@ -53,19 +53,18 @@ export default function Logs() {
 
       {/* Table */}
       <div className="">
-        <table className="table">
-          <thead>
-            <tr className="bg-gray-100 text-gray-700 text-left">
-              <th className="px-4 py-3 border">#</th>
-              <th className="px-4 py-3 border">Entity</th>
-              {/* <th className="px-4 py-3 border">Action</th>
-              <th className="px-4 py-3 border">Before</th> */}
-              <th className="px-4 py-3 border">After</th>
-              <th className="px-4 py-3 border">Performed By</th>
-              <th className="px-4 py-3 border">Date</th>
+        <table className="table table-hover table-bordered">
+          <thead className="table-dark">
+            <tr className="">
+              <th scope="col">#</th>
+              <th scope="col">Entity</th>
+              <th scope="col">Action</th>
+              <th scope="col">Affected</th>
+              <th scope="col">Performed By</th>
+              <th scope="col">Date</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody className="table-group-divider">
             {filteredLogs.length === 0 ? (
               <tr>
                 <td
@@ -83,21 +82,24 @@ export default function Logs() {
                     idx % 2 === 0 ? "bg-white" : "bg-gray-50"
                   } hover:bg-gray-100`}
                 >
-                  <td className="px-4 py-3 border">{idx+1}</td>
-                  <td className="px-4 py-3 border">{log.entity}</td>
-                  <td className="px-4 py-3 border">{log.action}</td>
-                  {/* <td className="px-4 py-3 border max-w-xs overflow-hidden">
-                    <pre className="whitespace-pre-wrap break-all text-xs">
-                      {JSON.stringify(log.beforeData, null, 2)}
-                    </pre>
+                  <td>{idx+1}</td>
+                  <td>{log.entity}</td>
+                  <td
+                    style={{
+                      color:
+                        log.action === "CREATE"
+                          ? "green"
+                          : log.action === "UPDATE"
+                          ? "orange"
+                          : "red", // for DELETE or anything else
+                      fontWeight: "500",
+                    }}
+                  >
+                    {log.action}
                   </td>
-                  <td className="px-4 py-3 border max-w-xs overflow-hidden">
-                    <pre className="whitespace-pre-wrap break-all text-xs">
-                      {JSON.stringify(log.afterData, null, 2)}
-                    </pre>
-                  </td> */}
-                  <td className="px-4 py-3 border">{log.performedBy}</td>
-                  <td className="px-4 py-3 border">
+                  <td>{log.beforeData}</td>
+                  <td>{log.performedBy}</td>
+                  <td>
                     {new Date(log.createdAt).toLocaleString()}
                   </td>
                 </tr>

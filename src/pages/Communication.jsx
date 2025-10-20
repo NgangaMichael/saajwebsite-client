@@ -13,6 +13,7 @@ export default function Communication() {
   const [communications, setCommunications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+  const storedUser = JSON.parse(localStorage.getItem("user"));
 
   // Add state
   const [adding, setAdding] = useState(false);
@@ -59,7 +60,7 @@ export default function Communication() {
   const deleteComm = async (id) => {
     if (!window.confirm("Are you sure you want to delete this communication?")) return;
     try {
-      await apiDeleteCommunication(id);
+      await apiDeleteCommunication(id, storedUser.username);
       setCommunications((prev) => prev.filter((c) => c.id !== id));
     } catch (err) {
       console.error("Error deleting communication:", err);
@@ -173,21 +174,21 @@ export default function Communication() {
       <hr />
 
       <div className="">
-        <table className="table">
-          <thead>
-            <tr className="bg-gray-100 text-gray-700 text-left">
-              <th className="px-4 py-3 border">#</th>
-              <th className="px-4 py-3 border">Title</th>
-              <th className="px-4 py-3 border">Level</th>
-              <th className="px-4 py-3 border">To</th>
-              <th className="px-4 py-3 border">Date</th>
-              <th className="px-4 py-3 border text-center">Actions</th>
+        <table className="table table-hover table-bordered">
+          <thead className="table-dark">
+            <tr className="">
+              <th scope="col">#</th>
+              <th scope="col">Title</th>
+              <th scope="col">Level</th>
+              <th scope="col">To</th>
+              <th scope="col">Date</th>
+              <th scope="col">Actions</th>
             </tr>
           </thead>
           <tbody>
             {filteredCommunications.length === 0 ? (
               <tr>
-                <td colSpan="5" className="text-center py-6 text-gray-500 italic">
+                <td colSpan="6" className="text-center py-6 text-gray-500 italic">
                   No communications found
                 </td>
               </tr>
@@ -197,12 +198,12 @@ export default function Communication() {
                   key={comm.id}
                   className={`${idx % 2 === 0 ? "bg-white" : "bg-gray-50"} hover:bg-gray-100`}
                 >
-                  <td className="px-4 py-3 border">{idx+1}</td>
-                  <td className="px-4 py-3 border">{comm.title}</td>
-                  <td className="px-4 py-3 border">{comm.level}</td>
-                  <td className="px-4 py-3 border">{comm.to}</td>
-                  <td className="px-4 py-3 border">{new Date(comm.createdAt).toLocaleDateString()}</td>
-                  <td className="px-4 py-3 border">
+                  <td>{idx+1}</td>
+                  <td>{comm.title}</td>
+                  <td>{comm.level}</td>
+                  <td>{comm.to}</td>
+                  <td>{new Date(comm.createdAt).toLocaleDateString()}</td>
+                  <td>
                     <div className="flex justify-center gap-3">
                       <button
                         onClick={() => viewComm(comm)}

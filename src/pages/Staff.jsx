@@ -6,7 +6,7 @@ import EditUserModal from "../components/EditUserModal";
 import { getUsers, addUser as apiAddUser, updateUser, deleteUser as apiDeleteUser } from "../services/users";
 
 
-export default function Users() {
+export default function Staff() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -14,8 +14,6 @@ export default function Users() {
   // Edit state
   const [editingUser, setEditingUser] = useState(null);
   const [formData, setFormData] = useState({ username: "", email: "" });
-
-  const storedUser = JSON.parse(localStorage.getItem("user"));
 
   // Add state
   const [adding, setAdding] = useState(false);
@@ -32,7 +30,6 @@ export default function Users() {
     designation: "",
     subscription: "",
     fileNumber: "",
-    membertype: "",
     approveStatus: "",
     waveSubscriptionStatus: "",
   });
@@ -40,16 +37,23 @@ export default function Users() {
   const navigate = useNavigate();
 
   // Fetch users
-  const fetchUsers = async () => {
-    try {
-      const data = await getUsers();
-      setUsers(data.data);
-    } catch (err) {
-      console.error("Error fetching users:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
+ const fetchUsers = async () => {
+  try {
+    const data = await getUsers();
+
+    // Filter users where designation === "Staff"
+    const staffUsers = data.data.filter(
+      (user) => user.designation === "Staff"
+    );
+
+    setUsers(staffUsers);
+  } catch (err) {
+    console.error("Error fetching users:", err);
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   useEffect(() => {
     fetchUsers();
@@ -63,7 +67,7 @@ export default function Users() {
   const deleteUser = async (id) => {
     if (!window.confirm("Are you sure you want to delete this user?")) return;
     try {
-      await apiDeleteUser(id, storedUser.username);
+      await apiDeleteUser(id);
       setUsers((prev) => prev.filter((u) => u.id !== id));
     } catch (err) {
       console.error("Error deleting user:", err);
@@ -87,7 +91,6 @@ const editUser = (user) => {
     designation: user.designation || "",
     subscription: user.subscription || "",
     fileNumber: user.fileNumber || "",
-    membertype: user.membertype || "",
     approveStatus: user.approveStatus || "",
     waveSubscriptionStatus: user.waveSubscriptionStatus || "",
   });
@@ -150,39 +153,10 @@ const editUser = (user) => {
     });
   };
 
-  const handleSubscriptionToggle = async (user) => {
-  const newStatus = user.subscription === "Active" ? "Inactive" : "Active";
-
-  try {
-    // Optimistic UI update
-    setUsers((prev) =>
-      prev.map((u) =>
-        u.id === user.id ? { ...u, subscription: newStatus } : u
-      )
-    );
-
-    // Update backend
-    await updateUser(user.id, { subscription: newStatus });
-
-    console.log(`Subscription for ${user.username} changed to ${newStatus}`);
-  } catch (err) {
-    console.error("Error updating subscription:", err);
-    alert("Failed to update subscription. Please try again.");
-
-    // Revert UI if update fails
-    setUsers((prev) =>
-      prev.map((u) =>
-        u.id === user.id ? { ...u, subscription: user.subscription } : u
-      )
-    );
-  }
-};
-
-
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
-        <p className="text-gray-600">Loading users...</p>
+        <p className="text-gray-600">Loading Staff...</p>
       </div>
     );
   }
@@ -200,7 +174,7 @@ const editUser = (user) => {
           onChange={(e) => setSearchTerm(e.target.value)}
         />
 
-        <h2 className="h5">Users</h2>
+        <h2 className="h5">Staff</h2>
       </div>
 
       <hr />
@@ -214,8 +188,6 @@ const editUser = (user) => {
               <th scope="col">#</th>
               <th scope="col">Username</th>
               <th scope="col">Email</th>
-              <th scope="col">Member</th>
-              <th scope="col">Committee</th>
               <th scope="col">Designation</th>
               <th scope="col">Date</th>
               <th scope="col">Actions</th>
@@ -236,16 +208,6 @@ const editUser = (user) => {
                   <td>{idx+1}</td>
                   <td>{user.username}</td>
                   <td>{user.email}</td>
-                  {/* <td>{user.membertype}</td> */}
-                  <td
-                    style={{
-                      color: user.membertype === "Direct" ? "green" : "red",
-                      fontWeight: "500",
-                    }}
-                  >
-                    {user.membertype}
-                  </td>
-                  <td>{user.committee || "-"}</td>
                   <td>{user.designation || "-"}</td>
                   <td>{new Date(user.createdAt).toLocaleDateString()}</td>
                   <td>
@@ -272,31 +234,12 @@ const editUser = (user) => {
                         <Trash2 size={18} />
                       </button>
 
-                      {/* <div class="form-check">
+                      <div class="form-check">
                         <input class="form-check-input" type="checkbox" value="" style={{
                           boxShadow: "0 0 5px 2px rgba(0, 123, 255, 0.6)", // Blue glow
                           borderColor: "#007bff", // Optional: blue border
                         }} />
-                      </div> */}
-
-                      <div className="form-check">
-                        <input
-                          className="form-check-input"
-                          type="checkbox"
-                          checked={user.subscription === "Active"}
-                          onChange={() => handleSubscriptionToggle(user)}
-                          title={user.subscription === "Active" ? "Active" : "Inactive"}
-                          style={{
-                            boxShadow: user.subscription === "Active"
-                              ? "0 0 5px 2px rgba(40, 167, 69, 0.6)" // Green glow when active
-                              : "0 0 5px 2px rgba(220, 53, 69, 0.4)", // Red glow when inactive
-                            borderColor: user.subscription === "Active" ? "#28a745" : "#dc3545",
-                            cursor: "pointer",
-                            transform: "scale(1.2)",
-                          }}
-                        />
                       </div>
-
                     </div>
                   </td>
                 </tr>

@@ -39,7 +39,7 @@ export const updateDocument = async (id, docData) => {
 };
 
 // Delete a document
-export const deleteDocument = async (id) => {
-  const res = await api.delete(`/documents/${id}`);
+export const deleteDocument = async (id, username) => {
+  const res = await api.delete(`/documents/${id}/${username}`);
   return res.data;
 };

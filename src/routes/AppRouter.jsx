@@ -9,6 +9,9 @@ import CommitteeDetails from "../pages/CommitteeDetails";
 import Logs from "../pages/Logs";
 import Communication from "../pages/Communication";
 import Inbox from "../pages/Inbox";
+import Profile from "../pages/Profile";
+import Staff from "../pages/Staff";
+import Subcommittees from "../pages/Subcommittees";
 
 function PrivateRoute({ children }) {
   // Better: check token instead of "auth"
@@ -36,10 +39,13 @@ export default function AppRouter() {
           <Route path="users" element={<Users />} />
           <Route path="users/:id" element={<UserDetails />} />
           <Route path="committees" element={<Committees />} />
+          <Route path="subcommittees" element={<Subcommittees />} />
           <Route path="documents" element={<Documents />} />
           <Route path="logs" element={<Logs />} />
           <Route path="communication" element={<Communication />} />
           <Route path="inbox" element={<Inbox />} />
+          <Route path="profile" element={<Profile />} />
+          <Route path="staff" element={<Staff />} />
           <Route path="committees/:id" element={<CommitteeDetails />} />
           <Route
             index

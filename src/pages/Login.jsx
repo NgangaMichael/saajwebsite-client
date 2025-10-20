@@ -28,9 +28,9 @@ export default function Login() {
         console.log('res.satatus', res.status)
         // 👇 Redirect depending on level
         if (user.level === "Level 1") {
-          navigate("/dashboard/documents"); // go straight to documents
+          navigate("/dashboard/profile");
         } else {
-          navigate("/dashboard/users"); // normal dashboard
+          navigate("/dashboard/profile");
         }
       }
       // redirect
