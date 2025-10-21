@@ -122,7 +122,7 @@ const editUser = (user) => {
 
   const addUser = async () => {
     try {
-      const data = await apiAddUser(newUser);
+      const data = await apiAddUser(newUser, storedUser.username);
         setUsers((prev) => [...prev, data.data]);
         closeAddModal();
     } catch (err) {
@@ -162,7 +162,7 @@ const editUser = (user) => {
     );
 
     // Update backend
-    await updateUser(user.id, { subscription: newStatus });
+    await updateUser(user.id, storedUser.username, { subscription: newStatus });
 
     console.log(`Subscription for ${user.username} changed to ${newStatus}`);
   } catch (err) {

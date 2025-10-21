@@ -9,14 +9,14 @@ export const getUsers = async () => {
 };
 
 // Add a new user
-export const addUser = async (userData) => {
-  const res = await api.post("/users", userData);
+export const addUser = async (userData, username) => {
+  const res = await api.post("/users", userData, username);
   return res.data;
 };
 
 // Update a user
-export const updateUser = async (userId, userData) => {
-  const res = await api.patch(`/users/${userId}`, userData);
+export const updateUser = async (userId, userData, username) => {
+  const res = await api.patch(`/users/${userId}/${username}`, userData);
   return res.data;
 };
 

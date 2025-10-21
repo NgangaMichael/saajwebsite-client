@@ -1,59 +1,48 @@
 import React, { useEffect, useState } from "react";
-import { Pencil, Trash2, Eye, X, Plus } from "lucide-react";
+import { Eye } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import AddUserModal from "../components/AddUserModal";
-import EditUserModal from "../components/EditUserModal";
-import { getUsers, addUser as apiAddUser, updateUser, deleteUser as apiDeleteUser } from "../services/users";
-
+import { getUsers } from "../services/users";
+import { applyLeave } from "../services/staff";
 
 export default function Staff() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-
-  // Edit state
-  const [editingUser, setEditingUser] = useState(null);
-  const [formData, setFormData] = useState({ username: "", email: "" });
-
-  // Add state
-  const [adding, setAdding] = useState(false);
-  const [newUser, setNewUser] = useState({
-    username: "",
-    email: "",
-    password: "",
-    age: "",
-    gender: "",
-    level: "",
-    maritalStatus: "",
-    committee: "",
-    subCommittee: "",
-    designation: "",
-    subscription: "",
-    fileNumber: "",
-    approveStatus: "",
-    waveSubscriptionStatus: "",
+  const [selectedStaff, setSelectedStaff] = useState(null);
+  const [leaveForm, setLeaveForm] = useState({
+    leaveType: "",
+    startDate: "",
+    endDate: "",
+    reason: "",
   });
+  const [submitting, setSubmitting] = useState(false);
 
   const navigate = useNavigate();
 
-  // Fetch users
- const fetchUsers = async () => {
-  try {
-    const data = await getUsers();
+  // ✅ Get logged-in user
+  const loggedInUser = JSON.parse(localStorage.getItem("user"));
 
-    // Filter users where designation === "Staff"
-    const staffUsers = data.data.filter(
-      (user) => user.designation === "Staff"
-    );
+  // ✅ Fetch staff users
+  const fetchUsers = async () => {
+    try {
+      const data = await getUsers();
+      const staffUsers = data.data.filter((user) => user.designation === "Staff");
 
-    setUsers(staffUsers);
-  } catch (err) {
-    console.error("Error fetching users:", err);
-  } finally {
-    setLoading(false);
-  }
-};
-
+      // ✅ Filter based on logged-in user's designation
+      if (loggedInUser?.designation === "Staff") {
+        // Show only the logged-in staff
+        const self = staffUsers.filter((u) => u.id === loggedInUser.id);
+        setUsers(self);
+      } else {
+        // Admin or higher-level users see all staff
+        setUsers(staffUsers);
+      }
+    } catch (err) {
+      console.error("Error fetching users:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     fetchUsers();
@@ -63,94 +52,44 @@ export default function Staff() {
     u.username?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // Delete user
-  const deleteUser = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this user?")) return;
+  // ✅ Handle form input
+  const handleChange = (e) => {
+    setLeaveForm({ ...leaveForm, [e.target.name]: e.target.value });
+  };
+
+  // ✅ Handle leave submission
+  const handleSubmitLeave = async (e) => {
+    e.preventDefault();
+    if (!selectedStaff) return alert("No staff selected!");
+
+    setSubmitting(true);
     try {
-      await apiDeleteUser(id);
-      setUsers((prev) => prev.filter((u) => u.id !== id));
+      const payload = {
+        ...leaveForm,
+        userId: selectedStaff.id,
+        status: "Pending",
+      };
+
+      await applyLeave(payload);
+      alert("Leave application submitted successfully!");
+
+      setLeaveForm({
+        leaveType: "",
+        startDate: "",
+        endDate: "",
+        reason: "",
+      });
+
+      // ✅ Close modal manually
+      const modalEl = document.getElementById("leaveModal");
+      const modal = window.bootstrap.Modal.getInstance(modalEl);
+      modal.hide();
     } catch (err) {
-      console.error("Error deleting user:", err);
+      console.error("Error submitting leave:", err);
+      alert("Failed to submit leave. Try again.");
+    } finally {
+      setSubmitting(false);
     }
-  };
-
-  // Edit handlers
-  // Edit handlers
-const editUser = (user) => {
-  setEditingUser(user);
-  setFormData({
-    username: user.username || "",
-    email: user.email || "",
-    password: user.password || "",
-    age: user.age || "",
-    gender: user.gender || "",
-    level: user.level || "",
-    maritalStatus: user.maritalStatus || "",
-    committee: user.committee || "",
-    subCommittee: user.subCommittee || "",
-    designation: user.designation || "",
-    subscription: user.subscription || "",
-    fileNumber: user.fileNumber || "",
-    approveStatus: user.approveStatus || "",
-    waveSubscriptionStatus: user.waveSubscriptionStatus || "",
-  });
-};
-
-
-  const handleEditChange = (e) => {
-    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
-  };
-
-  const saveUser = async () => {
-    try {
-      const data = await updateUser(editingUser.id, formData);
-        setUsers((prev) =>
-        prev.map((u) => (u.id === editingUser.id ? data.data : u))
-        );
-        closeEditModal();
-    } catch (err) {
-      console.error("Error updating user:", err);
-    }
-  };
-
-  const closeEditModal = () => {
-    setEditingUser(null);
-    setFormData({ username: "", email: "" });
-  };
-
-  // Add handlers
-  const handleAddChange = (e) => {
-    setNewUser((prev) => ({ ...prev, [e.target.name]: e.target.value }));
-  };
-
-  const addUser = async () => {
-    try {
-      const data = await apiAddUser(newUser);
-        setUsers((prev) => [...prev, data.data]);
-        closeAddModal();
-    } catch (err) {
-      console.error("Error adding user:", err);
-    }
-  };
-
-  const closeAddModal = () => {
-    setAdding(false);
-    setNewUser({
-      username: "",
-      email: "",
-      password: "",
-      age: "",
-      gender: "",
-      level: "",
-      maritalStatus: "",
-      committee: "",
-      subCommittee: "",
-      designation: "",
-      subscription: "",
-      fileNumber: "",
-      approveStatus: "",
-      waveSubscriptionStatus: "",
-    });
   };
 
   if (loading) {
@@ -162,35 +101,34 @@ const editUser = (user) => {
   }
 
   return (
-    <div className="">
+    <div>
       {/* Header */}
       <div>
-        <button className="btn btn-primary btn-sm float-end" onClick={() => setAdding(true)}>Add User</button>
-        <input
-          className="form-control float-end w-25 form-control-sm mx-2"
-          type="text"
-          placeholder="Search by username..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
-
+        {loggedInUser?.designation !== "Staff" && (
+          <input
+            className="form-control float-end w-25 form-control-sm mx-2"
+            type="text"
+            placeholder="Search by username..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        )}
         <h2 className="h5">Staff</h2>
       </div>
 
       <hr />
-      
-     
+
       {/* Table */}
-      <div className="">
+      <div>
         <table className="table table-hover table-bordered">
           <thead className="table-dark">
-            <tr className="">
-              <th scope="col">#</th>
-              <th scope="col">Username</th>
-              <th scope="col">Email</th>
-              <th scope="col">Designation</th>
-              <th scope="col">Date</th>
-              <th scope="col">Actions</th>
+            <tr>
+              <th>#</th>
+              <th>Username</th>
+              <th>Email</th>
+              <th>Designation</th>
+              <th>Date</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -202,10 +140,8 @@ const editUser = (user) => {
               </tr>
             ) : (
               filteredUsers.map((user, idx) => (
-                <tr
-                  key={user.id}
-                >
-                  <td>{idx+1}</td>
+                <tr key={user.id}>
+                  <td>{idx + 1}</td>
                   <td>{user.username}</td>
                   <td>{user.email}</td>
                   <td>{user.designation || "-"}</td>
@@ -213,33 +149,22 @@ const editUser = (user) => {
                   <td>
                     <div className="flex justify-center gap-3">
                       <button
-                        onClick={() => navigate(`${user.id}`)}
+                        onClick={() => navigate(`/dashboard/staff/${user.id}`)}
                         className="text-green-600 hover:text-green-800 transition"
                         title="View details"
                       >
                         <Eye size={18} />
                       </button>
-                      <button
-                        onClick={() => editUser(user)}
-                        className="text-blue-600 hover:text-blue-800 transition"
-                        title="Edit user"
-                      >
-                        <Pencil size={18} />
-                      </button>
-                      <button
-                        onClick={() => deleteUser(user.id)}
-                        className="text-red-600 hover:text-red-800 transition"
-                        title="Delete user"
-                      >
-                        <Trash2 size={18} />
-                      </button>
 
-                      <div class="form-check">
-                        <input class="form-check-input" type="checkbox" value="" style={{
-                          boxShadow: "0 0 5px 2px rgba(0, 123, 255, 0.6)", // Blue glow
-                          borderColor: "#007bff", // Optional: blue border
-                        }} />
-                      </div>
+                      <button
+                        type="button"
+                        className="btn btn-primary btn-sm"
+                        data-bs-toggle="modal"
+                        data-bs-target="#leaveModal"
+                        onClick={() => setSelectedStaff(user)}
+                      >
+                        Apply Leave
+                      </button>
                     </div>
                   </td>
                 </tr>
@@ -249,26 +174,106 @@ const editUser = (user) => {
         </table>
       </div>
 
-      {/* Add User Modal */}
-        {adding && (
-        <AddUserModal
-            newUser={newUser}
-            handleAddChange={handleAddChange}
-            addUser={addUser}
-            closeAddModal={closeAddModal}
-        />
-        )}
+      {/* ✅ Apply Leave Modal */}
+      <div
+        className="modal fade"
+        id="leaveModal"
+        tabIndex="-1"
+        aria-labelledby="leaveModalLabel"
+        aria-hidden="true"
+      >
+        <div className="modal-dialog modal-dialog-centered">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h1 className="modal-title fs-5" id="leaveModalLabel">
+                Apply for Leave
+              </h1>
+              <button
+                type="button"
+                className="btn-close"
+                data-bs-dismiss="modal"
+                aria-label="Close"
+              ></button>
+            </div>
 
-        {/* Edit User Modal */}
-        {editingUser && (
-        <EditUserModal
-            formData={formData}
-            handleEditChange={handleEditChange}
-            saveUser={saveUser}
-            closeEditModal={closeEditModal}
-        />
-        )}
+            <form onSubmit={handleSubmitLeave}>
+              <div className="modal-body">
+                <div className="mb-3">
+                  <label className="form-label fw-semibold">Leave Type</label>
+                  <select
+                    name="leaveType"
+                    className="form-select"
+                    value={leaveForm.leaveType}
+                    onChange={handleChange}
+                    required
+                  >
+                    <option value="">-- Select Leave Type --</option>
+                    <option value="Annual">Annual Leave</option>
+                    <option value="Sick">Sick Leave</option>
+                    <option value="Maternity">Maternity Leave</option>
+                    <option value="Compassionate">Compassionate Leave</option>
+                    <option value="Study">Study Leave</option>
+                  </select>
+                </div>
 
+                <div className="mb-3">
+                  <label className="form-label fw-semibold">Start Date</label>
+                  <input
+                    type="date"
+                    name="startDate"
+                    className="form-control"
+                    value={leaveForm.startDate}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+
+                <div className="mb-3">
+                  <label className="form-label fw-semibold">End Date</label>
+                  <input
+                    type="date"
+                    name="endDate"
+                    className="form-control"
+                    value={leaveForm.endDate}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+
+                <div className="mb-3">
+                  <label className="form-label fw-semibold">Reason</label>
+                  <textarea
+                    name="reason"
+                    className="form-control"
+                    rows="3"
+                    placeholder="State your reason for leave..."
+                    value={leaveForm.reason}
+                    onChange={handleChange}
+                    required
+                  ></textarea>
+                </div>
+              </div>
+
+              <div className="modal-footer">
+                <button
+                  type="button"
+                  className="btn btn-secondary btn-sm"
+                  data-bs-dismiss="modal"
+                >
+                  Close
+                </button>
+                <button
+                  type="submit"
+                  className="btn btn-primary btn-sm"
+                  disabled={submitting}
+                >
+                  {submitting ? "Submitting..." : "Submit Leave"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

@@ -1,33 +1,63 @@
 import { useState } from "react";
 import { Link, Outlet, useLocation } from "react-router-dom";
-import { Users, Puzzle, FileText, Layers, ChevronLeft, ChevronRight, LogOut, Inbox, MessageSquare, Activity, Settings, Users2 } from "lucide-react";
+import {
+  Users,
+  Puzzle,
+  FileText,
+  Layers,
+  ChevronLeft,
+  ChevronRight,
+  LogOut,
+  Inbox,
+  MessageSquare,
+  Activity,
+  Settings,
+  Users2,
+} from "lucide-react";
 
 export default function Dashboard() {
   const [collapsed, setCollapsed] = useState(false);
   const location = useLocation();
 
-  // Get user from localStorage
+  // ✅ Get user info from localStorage
   const storedUser = JSON.parse(localStorage.getItem("user"));
+  const userLevel = storedUser?.level;
+  const designation = storedUser?.designation?.toLowerCase(); // e.g. "staff"
 
-  // Base navigation items
+  // ✅ Base navigation items
   const baseNavItems = [
-    { to: "profile", label: "Profile", icon: <Settings size={20} />, color: "#228cc5ff" },       // green
-    { to: "users", label: "Users", icon: <Users size={20} />, color: "#22c55e" },       // green
-    { to: "committees", label: "Committees", icon: <Layers size={20} />, color: "#3b82f6" }, // blue
-    { to: "subcommittees", label: "Sub-Committees", icon: <Puzzle size={20} />, color: "#ff6e07ff" }, // blue
-    { to: "documents", label: "SAAJ Documents", icon: <FileText size={20} />, color: "#f59e0b" }, // amber
-    { to: "logs", label: "Logs", icon: <Activity size={20} />, color: "#ec4899" },      // pink
-    { to: "communication", label: "Send Messsage", icon: <MessageSquare size={20} />, color: "#8b5cf6" }, // purple
-    { to: "inbox", label: "Inbox", icon: <Inbox size={20} />, color: "#06b6d4" },       // cyan
-    { to: "staff", label: "Staff", icon: <Users2 size={20} />, color: "#b80c0cff" },       // cyan
+    { to: "profile", label: "Profile", icon: <Settings size={20} />, color: "#228cc5ff" },
+    { to: "users", label: "Users", icon: <Users size={20} />, color: "#22c55e" },
+    { to: "committees", label: "Committees", icon: <Layers size={20} />, color: "#3b82f6" },
+    { to: "subcommittees", label: "Sub-Committees", icon: <Puzzle size={20} />, color: "#ff6e07ff" },
+    { to: "documents", label: "SAAJ Documents", icon: <FileText size={20} />, color: "#f59e0b" },
+    { to: "logs", label: "Logs", icon: <Activity size={20} />, color: "#ec4899" },
+    { to: "communication", label: "Send Message", icon: <MessageSquare size={20} />, color: "#8b5cf6" },
+    { to: "inbox", label: "Inbox", icon: <Inbox size={20} />, color: "#06b6d4" },
+    { to: "staff", label: "Staff", icon: <Users2 size={20} />, color: "#b80c0cff" },
   ];
 
+  // ✅ Filter items based on level
+  let navItems = [];
 
-  // Restrict menu based on user level
-  const navItems =
-    storedUser?.level === "Level 1"
-      ? baseNavItems.filter((item) => item.to === "documents") // only documents for Level 1
-      : baseNavItems;
+  if (userLevel === "Level 1") {
+    navItems = baseNavItems.filter(
+      (item) =>
+        ["profile", "documents", "communication", "inbox"].includes(item.to)
+    );
+  } else if (userLevel === "Level 2") {
+    navItems = baseNavItems.filter(
+      (item) =>
+        ["profile", "documents", "communication", "inbox", "committees", "subcommittees"].includes(item.to)
+    );
+  } else if (userLevel === "Level 3") {
+    navItems = baseNavItems; // show all
+  }
+
+  // ✅ Add "Staff" only if designation is staff (for all levels)
+  if (designation === "staff" && !navItems.find((i) => i.to === "staff")) {
+    navItems.push(baseNavItems.find((i) => i.to === "staff"));
+  }
 
   return (
     <div className="h-screen flex">
@@ -37,17 +67,16 @@ export default function Dashboard() {
           collapsed ? "w-16" : "w-64"
         }`}
       >
-        
-
-        <h4 className="text-center pt-4 fw-bold">SAAJ <span> {!collapsed && (
-            <span className="">NAIROBI</span>
-          )} </span>
+        <h4 className="text-center pt-4 fw-bold">
+          SAAJ{" "}
+          {!collapsed && (
+            <span className="text-gray-400">NAIROBI</span>
+          )}
         </h4>
-        {/* Nav */}
+
+        {/* Navigation */}
         <nav className="mt-4 space-y-2 flex-1">
           {navItems.map((item) => {
-            // split pathname like: "/dashboard/committees"
-            // index 0 = "", index 1 = "dashboard", index 2 = "committees"
             const currentRoute = location.pathname.split("/")[2];
             const isActive = currentRoute === item.to;
 
@@ -70,15 +99,15 @@ export default function Dashboard() {
         </nav>
 
         {/* Logout Button */}
-          <button
-            onClick={() => {
-              localStorage.clear(); // clear auth data
-              window.location.href = "/login"; // redirect to login
-            }}
-            className="p-2 m-2 bg-red-700 rounded hover:bg-red-600 flex items-center justify-center"
-          >
-            <LogOut className="text-white-500 hover:text-white" size={20} />
-          </button>
+        <button
+          onClick={() => {
+            localStorage.clear();
+            window.location.href = "/login";
+          }}
+          className="p-2 m-2 bg-red-700 rounded hover:bg-red-600 flex items-center justify-center"
+        >
+          <LogOut size={20} />
+        </button>
 
         {/* Collapse Button */}
         <button

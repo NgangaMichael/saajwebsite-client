@@ -59,7 +59,7 @@ export default function Logs() {
               <th scope="col">#</th>
               <th scope="col">Entity</th>
               <th scope="col">Action</th>
-              <th scope="col">Affected</th>
+              {/* <th scope="col">Affected</th> */}
               <th scope="col">Performed By</th>
               <th scope="col">Date</th>
             </tr>
@@ -97,7 +97,7 @@ export default function Logs() {
                   >
                     {log.action}
                   </td>
-                  <td>{log.beforeData}</td>
+                  {/* <td>{log.beforeData}</td> */}
                   <td>{log.performedBy}</td>
                   <td>
                     {new Date(log.createdAt).toLocaleString()}

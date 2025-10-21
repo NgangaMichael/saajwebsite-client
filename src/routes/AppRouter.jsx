@@ -11,6 +11,7 @@ import Communication from "../pages/Communication";
 import Inbox from "../pages/Inbox";
 import Profile from "../pages/Profile";
 import Staff from "../pages/Staff";
+import StaffLeaveDetails from "../pages/StaffLeaveDetails";
 import Subcommittees from "../pages/Subcommittees";
 
 function PrivateRoute({ children }) {
@@ -46,6 +47,7 @@ export default function AppRouter() {
           <Route path="inbox" element={<Inbox />} />
           <Route path="profile" element={<Profile />} />
           <Route path="staff" element={<Staff />} />
+          <Route path="staff/:id" element={<StaffLeaveDetails />} />
           <Route path="committees/:id" element={<CommitteeDetails />} />
           <Route
             index
