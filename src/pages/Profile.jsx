@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { addTransactioncode } from "../services/transactioncode";
 import money from "../images/money.avif";
 
 export default function Profile() {
@@ -7,6 +8,11 @@ export default function Profile() {
   const [showEditModal, setShowEditModal] = useState(false);
   const [formData, setFormData] = useState({});
   const currentYear = new Date().getFullYear();
+
+  const [transactionCode, setTransactionCode] = useState(""); // for input value
+  const [loading, setLoading] = useState(false); // for loading spinner
+  const [message, setMessage] = useState(""); // for success/error message
+
 
   // Load user data from localStorage
   useEffect(() => {
@@ -31,6 +37,41 @@ export default function Profile() {
     setShowEditModal(false);
   };
 
+  // ✅ Submit transaction code
+  const handleTransactionSubmit = async (e) => {
+    e.preventDefault();
+    if (!transactionCode.trim()) {
+      setMessage("Please enter a transaction code.");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setMessage("");
+
+      // Send { userid, code } to backend
+      const payload = {
+        userid: user.id, // assuming your user object has an id
+        code: transactionCode,
+      };
+
+      await addTransactioncode(payload);
+
+      setMessage("✅ Transaction submitted successfully!");
+      setTransactionCode(""); // clear input
+      setTimeout(() => {
+        setShowMoneyModal(false);
+        setMessage("");
+      }, 1500);
+    } catch (err) {
+      console.error(err);
+      setMessage("❌ Failed to submit transaction. Try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
   if (!user) {
     return <div className="text-center mt-5">Loading profile...</div>;
   }
@@ -44,7 +85,7 @@ export default function Profile() {
             className="btn btn-primary btn-sm float-end"
             onClick={() => setShowMoneyModal(true)}
           >
-            Pay Lawajab
+            Pay Lawajam
           </button>
           <h2 className="h5">My Profile</h2>
         </div>
@@ -78,6 +119,7 @@ export default function Profile() {
                   { label: "Designation", key: "designation" },
                   { label: "Level", key: "level" },
                   { label: "Age", key: "age" },
+                  { label: "File Number", key: "fileNumber" },
                   { label: "Gender", key: "gender" },
                   { label: "Marital Status", key: "maritalStatus" },
                   { label: "Name", key: "username" },
@@ -169,7 +211,7 @@ export default function Profile() {
         </div>
       </div>
 
-      {/* Money Modal */}
+      {/* 💰 Money Modal */}
       {showMoneyModal && (
         <div
           className="modal fade show d-block"
@@ -178,19 +220,53 @@ export default function Profile() {
           <div className="modal-dialog modal-dialog-centered">
             <div className="modal-content">
               <div className="modal-header">
-                <h5 className="modal-title">Pay Lawajab Via Mpesa</h5>
+                <h5 className="modal-title">Pay Lawajam Via Mpesa</h5>
                 <button
                   type="button"
                   className="btn-close"
                   onClick={() => setShowMoneyModal(false)}
                 ></button>
               </div>
-              <div className="modal-body text-center">
-                <img
-                  src={money}
-                  alt="Money"
-                  className="img-fluid rounded shadow"
-                />
+              <div
+                className="modal-body text-center text-light"
+                style={{ backgroundColor: "green" }}
+              >
+                <h2>Paybill: 4182843</h2>
+                <h2>Account: “Lawajam”</h2>
+
+                <form onSubmit={handleTransactionSubmit}>
+                  <div className="mb-3 text-start">
+                    <label htmlFor="code" className="form-label">
+                      Transaction Code
+                    </label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      id="code"
+                      value={transactionCode}
+                      onChange={(e) => setTransactionCode(e.target.value)}
+                      placeholder="Enter Mpesa code"
+                    />
+                  </div>
+
+                  {message && (
+                    <p
+                      className={`fw-bold ${
+                        message.includes("✅") ? "text-light" : "text-warning"
+                      }`}
+                    >
+                      {message}
+                    </p>
+                  )}
+
+                  <button
+                    type="submit"
+                    className="btn btn-primary"
+                    disabled={loading}
+                  >
+                    {loading ? "Submitting..." : "Submit"}
+                  </button>
+                </form>
               </div>
             </div>
           </div>

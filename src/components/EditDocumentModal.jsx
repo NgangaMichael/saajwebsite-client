@@ -1,7 +1,15 @@
 import React from "react";
 import { X } from "lucide-react";
 
-export default function EditDocumentModal({ formData, handleEditChange, saveDocument, closeEditModal }) {
+export default function EditDocumentModal({
+  formData,
+  handleEditChange,
+  saveDocument,
+  closeEditModal,
+  committees,
+  subcommittees,
+}) {
+
   return (
     <div className="fixed inset-0 bg-black/40 flex justify-center items-center z-50">
       <div className="bg-white rounded-lg p-6 w-full max-w-lg shadow-lg">
@@ -29,16 +37,47 @@ export default function EditDocumentModal({ formData, handleEditChange, saveDocu
             value={formData.uploadedBy}
             onChange={handleEditChange}
             placeholder="Uploaded By"
-            className="w-full border rounded p-2"
+            className="w-full border rounded p-2 mt-3"
             required
           />
+
+          {/* ✅ Committee Dropdown */}
+            <select
+              name="committeeId"
+              value={formData.committeeId}
+              onChange={handleEditChange}
+              className="w-full border rounded p-2 mt-3"
+            >
+              <option value="">-- Select Committee --</option>
+              {committees.map((c) => (
+                <option key={c.id} value={c.name}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
+
+            {/* ✅ Subcommittee Dropdown */}
+            <select
+              name="subcommitteeId"
+              value={formData.subcommitteeId}
+              onChange={handleEditChange}
+              className="w-full border rounded p-2 mt-3"
+              disabled={!formData.committeeId}
+            >
+              <option value="">-- Select Subcommittee --</option>
+              {subcommittees.map((s) => (
+                <option key={s.id} value={s.name}>
+                  {s.name}
+                </option>
+              ))}
+            </select>
 
           <textarea
             name="description"
             value={formData.description}
             onChange={handleEditChange}
             placeholder="Description"
-            className="w-full border rounded p-2"
+            className="w-full border rounded p-2 mt-3"
           />
         </div>
 

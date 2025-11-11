@@ -33,7 +33,7 @@ export default function Dashboard() {
     { to: "documents", label: "SAAJ Documents", icon: <FileText size={20} />, color: "#f59e0b" },
     { to: "logs", label: "Logs", icon: <Activity size={20} />, color: "#ec4899" },
     { to: "communication", label: "Send Message", icon: <MessageSquare size={20} />, color: "#8b5cf6" },
-    { to: "inbox", label: "Inbox", icon: <Inbox size={20} />, color: "#06b6d4" },
+    // { to: "inbox", label: "Inbox", icon: <Inbox size={20} />, color: "#06b6d4" },
     { to: "staff", label: "Staff", icon: <Users2 size={20} />, color: "#b80c0cff" },
   ];
 

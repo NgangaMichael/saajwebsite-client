@@ -18,23 +18,21 @@ export default function Communication() {
   // Add state
   const [adding, setAdding] = useState(false);
   const [newComm, setNewComm] = useState({
-    memberNumber: "",
     title: "",
     info: "",
-    level: "low",
-    postedBy: "",
-    to: "",
+    sender: storedUser.username,
+    sendto: "",
+    sendtoid: "",
   });
 
   // Edit state
   const [editingComm, setEditingComm] = useState(null);
   const [formData, setFormData] = useState({
-    memberNumber: "",
     title: "",
     info: "",
-    level: "low",
-    postedBy: "",
-    to: "",
+    sender: storedUser.username,
+    sendto: "",
+    sendtoid: "",
   });
 
   // View state
@@ -85,12 +83,11 @@ export default function Communication() {
   const closeAddModal = () => {
     setAdding(false);
     setNewComm({
-      memberNumber: "",
       title: "",
       info: "",
-      level: "low",
-      postedBy: "",
-      to: "",
+      sender: storedUser.username,
+      sendto: "",
+      sendtoid: "",
     });
   };
 
@@ -98,12 +95,10 @@ export default function Communication() {
   const editComm = (comm) => {
     setEditingComm(comm);
     setFormData({
-      memberNumber: comm.memberNumber || "",
       title: comm.title || "",
       info: comm.info || "",
-      level: comm.level || "low",
-      postedBy: comm.postedBy || "",
-      to: comm.to || "",
+      sendto: comm.sendto || "",
+      sendtoid: comm.sendtoid || "",
     });
   };
 
@@ -126,12 +121,11 @@ export default function Communication() {
   const closeEditModal = () => {
     setEditingComm(null);
     setFormData({
-      memberNumber: "",
       title: "",
       info: "",
-      level: "low",
-      postedBy: "",
-      to: "",
+      sender: storedUser.username,
+      sendto: "",
+      sendtoid: "",
     });
   };
 
@@ -144,9 +138,29 @@ export default function Communication() {
     setViewingComm(null);
   };
 
-  const filteredCommunications = communications.filter((u) =>
-    u.title?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // const filteredCommunications = communications.filter((u) =>
+  //   u.title?.toLowerCase().includes(searchTerm.toLowerCase())
+  // );
+
+  const filteredCommunications = communications.filter((comm) => {
+  // Level 1 users see all
+  if (storedUser.level === "Level 3") return true;
+
+  // Global messages (All)
+  if (comm.sendto === "all" || comm.sendtoid === "0") return true;
+
+  // Personal messages by username or ID
+  if (comm.sendto === storedUser.username || comm.sendtoid == storedUser.id) return true;
+
+  // Committee-targeted messages
+  if (comm.sendto === storedUser.committee) return true;
+
+  // Otherwise not visible
+  return false;
+}).filter((comm) =>
+  comm.title?.toLowerCase().includes(searchTerm.toLowerCase())
+);
+
 
   if (loading) {
     return (
@@ -159,7 +173,17 @@ export default function Communication() {
   return (
     <div className="">
       <div>
-        <button className="btn btn-primary btn-sm float-end" onClick={() => setAdding(true)}>Add Communication</button>
+        {/* <button className="btn btn-primary btn-sm float-end" onClick={() => setAdding(true)}>Add Communication</button> */}
+        {storedUser.level === "Level 3" && (
+          <button
+            className="btn btn-primary btn-sm float-end"
+            onClick={() => setAdding(true)}
+          >
+            Add Communication
+          </button>
+        )}
+
+        
         <input
           className="form-control float-end w-25 form-control-sm mx-2"
           type="text"
@@ -179,8 +203,7 @@ export default function Communication() {
             <tr className="">
               <th scope="col">#</th>
               <th scope="col">Title</th>
-              <th scope="col">Level</th>
-              <th scope="col">To</th>
+              <th scope="col">Send To</th>
               <th scope="col">Date</th>
               <th scope="col">Actions</th>
             </tr>
@@ -200,11 +223,11 @@ export default function Communication() {
                 >
                   <td>{idx+1}</td>
                   <td>{comm.title}</td>
-                  <td>{comm.level}</td>
-                  <td>{comm.to}</td>
+                  <td>{comm.sendto}</td>
                   <td>{new Date(comm.createdAt).toLocaleDateString()}</td>
                   <td>
                     <div className="flex justify-center gap-3">
+                      {/* View is visible to everyone */}
                       <button
                         onClick={() => viewComm(comm)}
                         className="text-green-600 hover:text-green-800 transition"
@@ -212,20 +235,26 @@ export default function Communication() {
                       >
                         <Eye size={18} />
                       </button>
-                      <button
-                        onClick={() => editComm(comm)}
-                        className="text-blue-600 hover:text-blue-800 transition"
-                        title="Edit communication"
-                      >
-                        <Pencil size={18} />
-                      </button>
-                      <button
-                        onClick={() => deleteComm(comm.id)}
-                        className="text-red-600 hover:text-red-800 transition"
-                        title="Delete communication"
-                      >
-                        <Trash2 size={18} />
-                      </button>
+
+                      {/* Edit and Delete only for Level 3 */}
+                      {storedUser.level === "Level 3" && (
+                        <>
+                          <button
+                            onClick={() => editComm(comm)}
+                            className="text-blue-600 hover:text-blue-800 transition"
+                            title="Edit communication"
+                          >
+                            <Pencil size={18} />
+                          </button>
+                          <button
+                            onClick={() => deleteComm(comm.id)}
+                            className="text-red-600 hover:text-red-800 transition"
+                            title="Delete communication"
+                          >
+                            <Trash2 size={18} />
+                          </button>
+                        </>
+                      )}
                     </div>
                   </td>
                 </tr>
@@ -259,41 +288,20 @@ export default function Communication() {
       {viewingComm && (
         <div className="fixed inset-0 bg-black/40 flex justify-center items-center z-50">
           <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-lg">
-            <h3 className="text-xl font-semibold mb-4">Communication Details</h3>
+            <h5 className="text-success"><u>Communication Details</u></h5>
 
             <div className="space-y-3">
               <div>
-                <label className="font-semibold">Member Number:</label>
-                <p>{viewingComm.memberNumber}</p>
+                <label className="font-semibold">Sent By: {viewingComm.sender}</label>
               </div>
               <div>
-                <label className="font-semibold">Title:</label>
-                <p>{viewingComm.title}</p>
+                <label className="font-semibold">Title: {viewingComm.title}</label>
               </div>
               <div>
-                <label className="font-semibold">Info:</label>
+                <label className="text-success">Info:</label>
                 <p className="whitespace-pre-wrap">{viewingComm.info}</p>
               </div>
-              <div>
-                <label className="font-semibold">Level:</label>
-                <p>{viewingComm.level}</p>
-              </div>
-              <div>
-                <label className="font-semibold">Posted By:</label>
-                <p>{viewingComm.postedBy}</p>
-              </div>
-              <div>
-                <label className="font-semibold">To:</label>
-                <p>{viewingComm.to}</p>
-              </div>
-              <div>
-                <label className="font-semibold">Created At:</label>
-                <p>{new Date(viewingComm.createdAt).toLocaleString()}</p>
-              </div>
-              <div>
-                <label className="font-semibold">Updated At:</label>
-                <p>{new Date(viewingComm.updatedAt).toLocaleString()}</p>
-              </div>
+            
             </div>
 
             <div className="flex justify-end mt-4">

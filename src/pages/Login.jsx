@@ -42,13 +42,45 @@ export default function Login() {
       localStorage.setItem("user", JSON.stringify(res.data.user));
 
       if (res.status === 200) {
-        const user = res.data.user;
-        if (user.level === "Level 1") {
-          navigate("/dashboard/profile");
-        } else {
-          navigate("/dashboard/profile");
+      const user = res.data.user;
+      console.log("Logged in user:", user);
+
+      if (user.subdate) {
+      // Normalize dates to only YYYY-MM-DD
+      const todayStr = new Date().toISOString().split("T")[0];
+      const subDateStr = new Date(user.subdate).toISOString().split("T")[0];
+
+      const isExpired = subDateStr <= todayStr;
+
+      if (isExpired) {
+        try {
+          await api.patch(`/users/${user.id}`, {
+            approveStatus: "Not Approved",
+            subscription: "Inactive",
+          });
+
+          user.approveStatus = "Not Approved";
+          user.subscription = "Inactive";
+
+          alert("⚠️ Your subscription has expired. Please renew to regain access.");
+        } catch (err) {
+          console.error("Error updating expired subscription:", err);
         }
       }
+    }
+
+  if (user.subscription === "Inactive") {
+  alert("Your account is inactive. Please contact admin for renewal.");
+  return;
+}
+
+  // Save updated user locally
+  localStorage.setItem("user", JSON.stringify(user));
+
+  // Navigate based on level
+  navigate("/dashboard/profile");
+}
+
     } catch (err) {
       if (err.response) {
         alert(err.response.data.error || "Login failed");

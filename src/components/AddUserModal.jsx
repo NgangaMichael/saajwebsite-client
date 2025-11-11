@@ -1,28 +1,37 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { X } from "lucide-react";
 import { userFields } from "./userFields";
+import api from "../services/api"; // or your axios instance path
 
 export default function AddUserModal({ newUser, handleAddChange, addUser, closeAddModal }) {
+  const [committees, setCommittees] = useState([]);
+  const [subCommittees, setSubCommittees] = useState([]);
+
+  useEffect(() => {
+    const fetchDropdowns = async () => {
+      try {
+        const [committeeRes, subcommitteeRes] = await Promise.all([
+          api.get("/committees"),
+          api.get("/subcommittees"),
+        ]);
+
+        setCommittees(committeeRes.data.data || []);
+        setSubCommittees(subcommitteeRes.data.data || []);
+      } catch (err) {
+        console.error("Error fetching dropdown data:", err);
+      }
+    };
+    fetchDropdowns();
+  }, []);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-
-    // Validate required fields
     for (let field of userFields) {
       if (field.required && !newUser[field.name]) {
         alert(`${field.label} is required`);
         return;
       }
-      if (field.type === "email" && newUser[field.name] && !/\S+@\S+\.\S+/.test(newUser[field.name])) {
-        alert("Invalid email format");
-        return;
-      }
-      if (field.type === "number" && newUser[field.name] && isNaN(newUser[field.name])) {
-        alert(`${field.label} must be a number`);
-        return;
-      }
     }
-
     addUser();
   };
 
@@ -37,35 +46,58 @@ export default function AddUserModal({ newUser, handleAddChange, addUser, closeA
         </div>
 
         <form className="grid grid-cols-2 gap-4" onSubmit={handleSubmit}>
-          {userFields.map((field) => (
-            <div key={field.name}>
-              <label className="block text-gray-700 mb-1 capitalize">{field.label}</label>
-              {field.type === "select" ? (
-                <select
-                  name={field.name}
-                  value={newUser[field.name]}
-                  onChange={handleAddChange}
-                  className="w-full border px-3 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                  required={field.required}
-                >
-                  <option value="">Select {field.label}</option>
-                  {field.options.map((option) => (
-                    <option key={option} value={option}>{option}</option>
-                  ))}
-                </select>
-              ) : (
-                <input
-                  type={field.type}
-                  name={field.name}
-                  value={newUser[field.name]}
-                  onChange={handleAddChange}
-                  className="w-full border px-3 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                  required={field.required}
-                  readOnly={field.readonly}
-                />
-              )}
-            </div>
-          ))}
+          {userFields.map((field) => {
+            let options = field.options || [];
+
+            // Inject DB data for these fields
+            if (field.name === "committee") {
+              options = committees.map((c) => ({
+                label: c.name,
+                value: c.name,
+              }));
+            }
+            if (field.name === "subCommittee") {
+              options = subCommittees.map((s) => ({
+                label: s.name,
+                value: s.name,
+              }));
+            }
+
+            return (
+              <div key={field.name}>
+                <label className="block text-gray-700 mb-1 capitalize">{field.label}</label>
+                {field.type === "select" ? (
+                  <select
+                    name={field.name}
+                    value={newUser[field.name]}
+                    onChange={handleAddChange}
+                    className="w-full border px-3 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                    required={field.required}
+                  >
+                    <option value="">Select {field.label}</option>
+                    {options.map((option) => (
+                      <option
+                        key={option.value || option}
+                        value={option.value || option}
+                      >
+                        {option.label || option}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <input
+                    type={field.type}
+                    name={field.name}
+                    value={newUser[field.name]}
+                    onChange={handleAddChange}
+                    className="w-full border px-3 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                    required={field.required}
+                    readOnly={field.readonly}
+                  />
+                )}
+              </div>
+            );
+          })}
 
           <div className="col-span-2 flex justify-end mt-6 gap-3">
             <button

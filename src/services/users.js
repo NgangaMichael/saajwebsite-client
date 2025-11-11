@@ -8,6 +8,12 @@ export const getUsers = async () => {
   return res.data;
 };
 
+// Get single user
+export const getUserById = async (id) => {
+  const res = await api.get(`/users/${id}`);
+  return res.data;
+};
+
 // Add a new user
 export const addUser = async (userData, username) => {
   const res = await api.post("/users", userData, username);
@@ -16,7 +22,10 @@ export const addUser = async (userData, username) => {
 
 // Update a user
 export const updateUser = async (userId, userData, username) => {
-  const res = await api.patch(`/users/${userId}/${username}`, userData);
+  // console.log("Updating user:", userId, userData, username);
+  // console.log("Updating user:",username);
+  // const res = await api.patch(`/users/${userId}/${username}`, userData);
+  const res = await api.patch(`/users/${userId}`, userData);
   return res.data;
 };
 

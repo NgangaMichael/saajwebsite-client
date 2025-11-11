@@ -100,7 +100,7 @@ const editUser = (user) => {
 
   const saveUser = async () => {
     try {
-      const data = await updateUser(editingUser.id, formData);
+      const data = await updateUser(editingUser.id, formData, storedUser.username);
         setUsers((prev) =>
         prev.map((u) => (u.id === editingUser.id ? data.data : u))
         );
@@ -176,6 +176,64 @@ const editUser = (user) => {
       )
     );
   }
+};
+
+const handleDateSelection = async (user, event) => {
+  // Get the button position
+  const rect = event.currentTarget.getBoundingClientRect();
+
+  // Create an invisible date input
+  const input = document.createElement("input");
+  input.type = "date";
+  input.style.position = "fixed";
+  input.style.left = `${rect.right + -90}px`; // appear to the right of the button
+  input.style.top = `${rect.top}px`;
+  input.style.opacity = "0";
+  input.style.pointerEvents = "none";
+  document.body.appendChild(input);
+
+  // Open date picker after short delay
+  setTimeout(() => (input.showPicker ? input.showPicker() : input.click()), 10);
+
+  input.onchange = async (e) => {
+    const selectedDate = e.target.value;
+    if (!selectedDate) {
+      document.body.removeChild(input);
+      return;
+    }
+
+    const confirmUpdate = window.confirm(
+      `Do you want to update ${user.username}'s subdate to ${selectedDate}?`
+    );
+
+    if (confirmUpdate) {
+      try {
+        // Update UI optimistically
+        setUsers((prev) =>
+          prev.map((u) =>
+            u.id === user.id ? { ...u, subdate: selectedDate } : u
+          )
+        );
+
+        // Backend update
+        await updateUser(user.id, { subdate: selectedDate }, storedUser.username);
+        console.log(`Subdate for ${user.username} updated to ${selectedDate}`);
+      } catch (err) {
+        console.error("Error updating subdate:", err);
+        alert("Failed to update subdate. Please try again.");
+
+        // Revert on error
+        setUsers((prev) =>
+          prev.map((u) =>
+            u.id === user.id ? { ...u, subdate: user.subdate } : u
+          )
+        );
+      }
+    }
+
+    // Cleanup
+    document.body.removeChild(input);
+  };
 };
 
 
@@ -295,6 +353,16 @@ const editUser = (user) => {
                             transform: "scale(1.2)",
                           }}
                         />
+                      </div>
+
+                      <div className="position-relative">
+                        <button
+                          onClick={(e) => handleDateSelection(user, e)}
+                          className="btn btn-light border shadow-sm"
+                          title="Select and update subdate"
+                        >
+                          <i className="fa fa-calendar"></i>
+                        </button>
                       </div>
 
                     </div>

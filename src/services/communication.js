@@ -14,6 +14,7 @@ export const getCommunicationById = async (id) => {
 
 // Add communication
 export const addCommunication = async (data) => {
+  console.log("Adding communication with data:", data);
   const res = await api.post("/communications", data);
   return res.data;
 };

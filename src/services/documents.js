@@ -25,6 +25,7 @@ export const getDocuments = async () => {
 
 // services/documents.js
 export const addDocument = async (formData) => {
+  console.log(formData)
   const res = await api.post("/documents", formData, {
     headers: { "Content-Type": "multipart/form-data" },
   });
