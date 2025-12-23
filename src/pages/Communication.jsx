@@ -8,6 +8,9 @@ import {
 } from "../services/communication";
 import AddCommunicationModal from "../components/AddCommunicationModal";
 import EditCommunicationModal from "../components/EditCommunicationModal";
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
 
 export default function Communication() {
   const [communications, setCommunications] = useState([]);
@@ -74,11 +77,24 @@ export default function Communication() {
     try {
       const data = await apiAddCommunication(newComm);
       setCommunications((prev) => [...prev, data.data]);
+      toast.success('Communication sent successfully!');  // ✅ toast message
       closeAddModal();
     } catch (err) {
       console.error("Error adding communication:", err);
+      toast.error('Failed to send communication'); // optional error toast
     }
   };
+
+
+  // const addComm = async () => {
+  //   try {
+  //     const data = await apiAddCommunication(newComm);
+  //     setCommunications((prev) => [...prev, data.data]);
+  //     closeAddModal();
+  //   } catch (err) {
+  //     console.error("Error adding communication:", err);
+  //   }
+  // };
 
   const closeAddModal = () => {
     setAdding(false);
@@ -106,17 +122,32 @@ export default function Communication() {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
+  // const saveComm = async () => {
+  //   try {
+  //     const data = await updateCommunication(editingComm.id, formData);
+  //     setCommunications((prev) =>
+  //       prev.map((c) => (c.id === editingComm.id ? data.data : c))
+  //     );
+  //     closeEditModal();
+  //   } catch (err) {
+  //     console.error("Error updating communication:", err);
+  //   }
+  // };
+
   const saveComm = async () => {
-    try {
-      const data = await updateCommunication(editingComm.id, formData);
-      setCommunications((prev) =>
-        prev.map((c) => (c.id === editingComm.id ? data.data : c))
-      );
-      closeEditModal();
-    } catch (err) {
-      console.error("Error updating communication:", err);
-    }
-  };
+  try {
+    const data = await updateCommunication(editingComm.id, formData);
+    setCommunications((prev) =>
+      prev.map((c) => (c.id === editingComm.id ? data.data : c))
+    );
+    toast.success('Communication updated successfully!');
+    closeEditModal();
+  } catch (err) {
+    console.error("Error updating communication:", err);
+    toast.error('Failed to update communication');
+  }
+};
+
 
   const closeEditModal = () => {
     setEditingComm(null);
@@ -315,6 +346,7 @@ export default function Communication() {
           </div>
         </div>
       )}
+        <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} />
     </div>
   );
 }

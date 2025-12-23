@@ -6,6 +6,8 @@ export const userFields = [
   { name: "gender", label: "Gender", type: "select", required: true, options: ["Male", "Female"] },
   { name: "level", label: "Level", type: "select", required: true, options: ["Level 1", "Level 2", "Level 3"] },
   { name: "maritalStatus", label: "Marital Status", type: "select", required: true, options: ["Married", "Single"] },
+  { name: "employmentstatus", label: "Employmet Status", type: "select", required: true, options: ["Employed", "Unemplyed", "Self-Employed"] },
+  { name: "occupation", label: "Occupation", type: "text", required: true },
 
   // 🔽 These two will now load dynamically
   { name: "committee", label: "Committee", type: "select", required: false },

@@ -11,7 +11,7 @@ import AddDocumentModal from "../components/AddDocumentModal";
 import EditDocumentModal from "../components/EditDocumentModal";
 import { getCommittees } from "../services/committees";
 import { getsubCommittees } from "../services/subcommittees";
-
+import { useSearchParams } from "react-router-dom";
 
 export default function Documents() {
   const [docs, setDocs] = useState([]);
@@ -22,10 +22,15 @@ export default function Documents() {
   const [committees, setCommittees] = useState([]);
   const [subcommittees, setSubcommittees] = useState([]);
 
+  const [searchParams] = useSearchParams();
+  const urlType = searchParams.get("type");
+
   // Filter states
   const [filterCommittee, setFilterCommittee] = useState("");
   const [filterSubcommittee, setFilterSubcommittee] = useState("");
-  const [filterType, setFilterType] = useState("");
+  // const [filterType, setFilterType] = useState("");
+
+  const [filterType, setFilterType] = useState(urlType || "");
 
   // Get user from localStorage
   const storedUser = JSON.parse(localStorage.getItem("user"));
@@ -294,7 +299,7 @@ export default function Documents() {
             </select>
           </div>
 
-          <div className="col-md-3">
+          {/* <div className="col-md-3">
             <label className="form-label small mb-1">Filter by Type</label>
             <select
               className="form-select form-select-sm"
@@ -308,7 +313,7 @@ export default function Documents() {
                 </option>
               ))}
             </select>
-          </div>
+          </div> */}
 
           <div className="col-md-3">
             <button

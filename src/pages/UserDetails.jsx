@@ -128,6 +128,7 @@ export default function UserDetails() {
               <p><strong>Committee:</strong> {user.committee || "-"}</p>
               <p><strong>Sub-Committee:</strong> {user.subCommittee || "-"}</p>
               <p><strong>Approve Status:</strong> {user.approveStatus || "-"}</p>
+              <p><strong>Employment Status:</strong> {user.employmentstatus || "-"}</p>
           </div>
           <div className="col-6">
               <p><strong>Designation:</strong> {user.designation}</p>
@@ -135,6 +136,7 @@ export default function UserDetails() {
               <p><strong>Subscription:</strong> {user.subscription || "-"}</p>
               <p><strong>Membertype:</strong> {user.membertype || "-"}</p>
               <p><strong>File Number:</strong> {user.fileNumber || "-"}</p>
+              <p><strong>Occupation:</strong> {user.occupation || "-"}</p>
               <p><strong>Expiry Date:</strong> {user.subdate || "-"}</p>
           </div>
         </div>
