@@ -3,6 +3,7 @@ import { Eye } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { getUsers } from "../services/users";
 import { applyLeave } from "../services/staff";
+import { applyLoan } from "../services/loans";  // ✅ Import from loans service
 
 export default function Staff() {
   const [users, setUsers] = useState([]);
@@ -13,6 +14,13 @@ export default function Staff() {
     leaveType: "",
     startDate: "",
     endDate: "",
+    reason: "",
+  });
+
+  const [loanForm, setLoanForm] = useState({
+    amount: "",
+    purpose: "",
+    repaymentMonths: "",
     reason: "",
   });
   const [submitting, setSubmitting] = useState(false);
@@ -55,6 +63,46 @@ export default function Staff() {
   // ✅ Handle form input
   const handleChange = (e) => {
     setLeaveForm({ ...leaveForm, [e.target.name]: e.target.value });
+  };
+
+  const handleLoanChange = (e) => {
+    setLoanForm({ ...loanForm, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmitLoan = async (e) => {
+    e.preventDefault();
+    if (!selectedStaff) return alert("No staff selected!");
+
+    setSubmitting(true);
+    try {
+      const payload = {
+        userId: selectedStaff.id,
+        amount: parseFloat(loanForm.amount),
+        purpose: loanForm.purpose,
+        repaymentMonths: parseInt(loanForm.repaymentMonths),
+        reason: loanForm.reason,
+        status: "Pending",
+      };
+
+      await applyLoan(payload);
+      alert("Loan application submitted successfully!");
+
+      setLoanForm({
+        amount: "",
+        purpose: "",
+        repaymentMonths: "",
+        reason: "",
+      });
+
+      const modalEl = document.getElementById("loanModal");
+      const modal = window.bootstrap.Modal.getInstance(modalEl);
+      modal.hide();
+    } catch (err) {
+      console.error("Error submitting loan:", err);
+      alert("Failed to submit loan. Try again.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   // ✅ Handle leave submission
@@ -146,7 +194,7 @@ export default function Staff() {
                   <td>{user.email}</td>
                   <td>{user.designation || "-"}</td>
                   <td>{new Date(user.createdAt).toLocaleDateString()}</td>
-                  <td>
+                  {/* <td>
                     <div className="flex justify-center gap-3">
                       <button
                         onClick={() => navigate(`/dashboard/staff/${user.id}`)}
@@ -164,6 +212,39 @@ export default function Staff() {
                         onClick={() => setSelectedStaff(user)}
                       >
                         Apply Leave
+                      </button>
+                    </div>
+                  </td> */}
+
+                  <td>
+                    <div className="d-flex justify-content-center gap-2">
+                      <button
+                        onClick={() => navigate(`/dashboard/staff/${user.id}`)}
+                        className="text-green-600 hover:text-green-800 transition"
+                        title="View details"
+                      >
+                        <Eye size={18} />
+                      </button>
+
+                      <button
+                        type="button"
+                        className="btn btn-primary btn-sm"
+                        data-bs-toggle="modal"
+                        data-bs-target="#leaveModal"
+                        onClick={() => setSelectedStaff(user)}
+                      >
+                        Apply Leave
+                      </button>
+
+                      {/* ✅ NEW: Apply Loan Button */}
+                      <button
+                        type="button"
+                        className="btn btn-success btn-sm"
+                        data-bs-toggle="modal"
+                        data-bs-target="#loanModal"
+                        onClick={() => setSelectedStaff(user)}
+                      >
+                        Apply Loan
                       </button>
                     </div>
                   </td>
@@ -268,6 +349,114 @@ export default function Staff() {
                   disabled={submitting}
                 >
                   {submitting ? "Submitting..." : "Submit Leave"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      {/* ✅ Apply Loan Modal */}
+      <div
+        className="modal fade"
+        id="loanModal"
+        tabIndex="-1"
+        aria-labelledby="loanModalLabel"
+        aria-hidden="true"
+      >
+        <div className="modal-dialog modal-dialog-centered">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h1 className="modal-title fs-5" id="loanModalLabel">
+                Apply for Loan
+              </h1>
+              <button
+                type="button"
+                className="btn-close"
+                data-bs-dismiss="modal"
+                aria-label="Close"
+              ></button>
+            </div>
+
+            <form onSubmit={handleSubmitLoan}>
+              <div className="modal-body">
+                <div className="mb-3">
+                  <label className="form-label fw-semibold">Loan Amount (KES)</label>
+                  <input
+                    type="number"
+                    name="amount"
+                    className="form-control"
+                    placeholder="Enter amount (e.g., 50000)"
+                    value={loanForm.amount}
+                    onChange={handleLoanChange}
+                    min="1"
+                    step="0.01"
+                    required
+                  />
+                </div>
+
+                <div className="mb-3">
+                  <label className="form-label fw-semibold">Purpose</label>
+                  <select
+                    name="purpose"
+                    className="form-select"
+                    value={loanForm.purpose}
+                    onChange={handleLoanChange}
+                    required
+                  >
+                    <option value="">-- Select Purpose --</option>
+                    <option value="Emergency">Emergency</option>
+                    <option value="Education">Education</option>
+                    <option value="Medical">Medical</option>
+                    <option value="Housing">Housing</option>
+                    <option value="Business">Business</option>
+                    <option value="Personal">Personal</option>
+                  </select>
+                </div>
+
+                <div className="mb-3">
+                  <label className="form-label fw-semibold">Repayment Period (Months)</label>
+                  <input
+                    type="number"
+                    name="repaymentMonths"
+                    className="form-control"
+                    placeholder="Enter number of months (e.g., 12)"
+                    value={loanForm.repaymentMonths}
+                    onChange={handleLoanChange}
+                    min="1"
+                    max="60"
+                    required
+                  />
+                </div>
+
+                <div className="mb-3">
+                  <label className="form-label fw-semibold">Reason</label>
+                  <textarea
+                    name="reason"
+                    className="form-control"
+                    rows="3"
+                    placeholder="Provide details about why you need this loan..."
+                    value={loanForm.reason}
+                    onChange={handleLoanChange}
+                    required
+                  ></textarea>
+                </div>
+              </div>
+
+              <div className="modal-footer">
+                <button
+                  type="button"
+                  className="btn btn-secondary btn-sm"
+                  data-bs-dismiss="modal"
+                >
+                  Close
+                </button>
+                <button
+                  type="submit"
+                  className="btn btn-success btn-sm"
+                  disabled={submitting}
+                >
+                  {submitting ? "Submitting..." : "Submit Loan"}
                 </button>
               </div>
             </form>

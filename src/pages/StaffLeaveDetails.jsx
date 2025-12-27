@@ -18,7 +18,12 @@ export default function StaffLeaveDetails() {
   const fetchLeaves = async () => {
     try {
       const res = await getLeavesByStaff(id);
-      setLeaves(res.data);
+      console.log('leave details', res);
+
+      // Filter to ensure only leaves matching the URL 'id' are shown
+      const filteredData = res.data.filter(leave => Number(leave.userId) === Number(id));
+      
+      setLeaves(filteredData);
     } catch (err) {
       console.error("Error fetching staff leaves:", err);
       setError("Failed to load leaves.");
@@ -62,6 +67,13 @@ export default function StaffLeaveDetails() {
           onClick={() => navigate(-1)}
         >
           <ArrowLeft size={16} /> Back
+        </button>
+
+        <button 
+          className="btn btn-success btn-sm" 
+          onClick={() => navigate(`/dashboard/staff/loans/${id}`)}
+        >
+          Loans
         </button>
       </div>
 

@@ -14,6 +14,7 @@ import Staff from "../pages/Staff";
 import StaffLeaveDetails from "../pages/StaffLeaveDetails";
 import Subcommittees from "../pages/Subcommittees";
 import Homedocs from "../pages/Homedocs";
+import StaffLoanDetails from "../pages/StaffLoanDetails";
 
 function PrivateRoute({ children }) {
   // Better: check token instead of "auth"
@@ -50,6 +51,7 @@ export default function AppRouter() {
           <Route path="profile" element={<Profile />} />
           <Route path="staff" element={<Staff />} />
           <Route path="staff/:id" element={<StaffLeaveDetails />} />
+          <Route path="staff/loans/:id" element={<StaffLoanDetails />} /> {/* Add this line */}
           <Route path="committees/:id" element={<CommitteeDetails />} />
           <Route
             index
