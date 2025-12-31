@@ -13,6 +13,7 @@ import {
   Activity,
   Settings,
   Users2,
+  List
 } from "lucide-react";
 
 export default function Dashboard() {
@@ -36,6 +37,7 @@ export default function Dashboard() {
     { to: "communication", label: "Send Message", icon: <MessageSquare size={20} />, color: "#8b5cf6" },
     // { to: "inbox", label: "Inbox", icon: <Inbox size={20} />, color: "#06b6d4" },
     { to: "staff", label: "Staff", icon: <Users2 size={20} />, color: "#b80c0cff" },
+    { to: "survey", label: "Survey", icon: <List size={20} />, color: "#b80c6eff" },
   ];
 
   // ✅ Filter items based on level

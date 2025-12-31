@@ -15,6 +15,9 @@ import StaffLeaveDetails from "../pages/StaffLeaveDetails";
 import Subcommittees from "../pages/Subcommittees";
 import Homedocs from "../pages/Homedocs";
 import StaffLoanDetails from "../pages/StaffLoanDetails";
+import Survey from "../pages/Survey";
+import SurveyRespond from "../pages/SurveyRespond";
+import SurveyAnalytics from "../pages/SurveyAnalytics";
 
 function PrivateRoute({ children }) {
   // Better: check token instead of "auth"
@@ -50,6 +53,9 @@ export default function AppRouter() {
           <Route path="inbox" element={<Inbox />} />
           <Route path="profile" element={<Profile />} />
           <Route path="staff" element={<Staff />} />
+          <Route path="survey" element={<Survey />} />
+          <Route path="survey/respond/:id" element={<SurveyRespond />} />
+          <Route path="survey/analytics/:id" element={<SurveyAnalytics />} />
           <Route path="staff/:id" element={<StaffLeaveDetails />} />
           <Route path="staff/loans/:id" element={<StaffLoanDetails />} /> {/* Add this line */}
           <Route path="committees/:id" element={<CommitteeDetails />} />
