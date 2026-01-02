@@ -46,12 +46,12 @@ export default function Dashboard() {
   if (userLevel === "Level 1") {
     navItems = baseNavItems.filter(
       (item) =>
-        ["profile", "documents", "communication", "inbox"].includes(item.to)
+        ["profile", "homedocs", "communication", "inbox", "survey"].includes(item.to)
     );
   } else if (userLevel === "Level 2") {
     navItems = baseNavItems.filter(
       (item) =>
-        ["profile", "documents", "communication", "inbox", "committees", "subcommittees"].includes(item.to)
+        ["profile", "homedocs", "communication", "inbox", "committees", "subcommittees", "survey"].includes(item.to)
     );
   } else if (userLevel === "Level 3") {
     navItems = baseNavItems; // show all

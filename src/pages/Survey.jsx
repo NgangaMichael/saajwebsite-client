@@ -83,13 +83,19 @@ export default function Survey() {
                   )}
                 </td>
                 <td>
-                  <button
-                    className="btn btn-success btn-sm"
-                    onClick={() => navigate(`respond/${survey.id}`)}
-                  >
-                    Respond
-                  </button>
-
+                   {survey.alreadySubmitted ? (
+                    <span className="text-success">
+                      <CheckCircle size={16} /> Submitted
+                    </span>
+                  ) : (
+                    <button
+                      className="btn btn-success btn-sm"
+                      onClick={() => navigate(`respond/${survey.id}`)}
+                    >
+                      Respond
+                    </button>
+                  )}
+            
                    {/* Admin Analytics Button */}
                   {isLevel3 && (
                     <button
