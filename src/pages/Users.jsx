@@ -4,7 +4,8 @@ import { useNavigate } from "react-router-dom";
 import AddUserModal from "../components/AddUserModal";
 import EditUserModal from "../components/EditUserModal";
 import { getUsers, addUser as apiAddUser, updateUser, deleteUser as apiDeleteUser } from "../services/users";
-
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 export default function Users() {
   const [users, setUsers] = useState([]);
@@ -24,6 +25,9 @@ export default function Users() {
     email: "",
     password: "",
     age: "",
+    dob: "",
+    idpassport: "",
+    nationality: "",
     gender: "",
     level: "",
     maritalStatus: "",
@@ -67,8 +71,10 @@ export default function Users() {
     try {
       await apiDeleteUser(id, storedUser.username);
       setUsers((prev) => prev.filter((u) => u.id !== id));
+      toast.success("User deleted successfully");
     } catch (err) {
       console.error("Error deleting user:", err);
+      toast.error("Failed to delete user");
     }
   };
 
@@ -81,6 +87,9 @@ const editUser = (user) => {
     email: user.email || "",
     password: user.password || "",
     age: user.age || "",
+    dob: user.dob || "",
+    idpassport: user.idpassport || "",
+    nationality: user.nationality || "",
     gender: user.gender || "",
     level: user.level || "",
     maritalStatus: user.maritalStatus || "",
@@ -109,8 +118,10 @@ const editUser = (user) => {
         prev.map((u) => (u.id === editingUser.id ? data.data : u))
         );
         closeEditModal();
+        toast.success(`User "${formData.username}" updated successfully`);
     } catch (err) {
       console.error("Error updating user:", err);
+      toast.error("Failed to update user");
     }
   };
 
@@ -128,9 +139,11 @@ const editUser = (user) => {
     try {
       const data = await apiAddUser(newUser, storedUser.username);
         setUsers((prev) => [...prev, data.data]);
+        toast.success(`User "${newUser.username}" added successfully`);
         closeAddModal();
     } catch (err) {
       console.error("Error adding user:", err);
+      toast.error("Failed to add user");
     }
   };
 
@@ -141,6 +154,9 @@ const editUser = (user) => {
       email: "",
       password: "",
       age: "",
+      dob: "",
+      idpassport: "",
+      nationality: "",
       gender: "",
       level: "",
       maritalStatus: "",
@@ -169,11 +185,15 @@ const editUser = (user) => {
 
     // Update backend
     await updateUser(user.id, storedUser.username, { subscription: newStatus });
+    toast.info(
+      `Subscription for ${user.username} set to ${newStatus}`
+    );
 
     console.log(`Subscription for ${user.username} changed to ${newStatus}`);
   } catch (err) {
     console.error("Error updating subscription:", err);
     alert("Failed to update subscription. Please try again.");
+    toast.error("Failed to update subscription");
 
     // Revert UI if update fails
     setUsers((prev) =>
@@ -399,6 +419,7 @@ const handleDateSelection = async (user, event) => {
             closeEditModal={closeEditModal}
         />
         )}
+      <ToastContainer position="top-right" autoClose={3000} />
 
     </div>
   );

@@ -124,6 +124,7 @@ export default function UserDetails() {
           <div className="col-6">
               <p><strong>Email:</strong> {user.email}</p>
               <p><strong>Age:</strong> {user.age}</p>
+              <p><strong>Date of Birth:</strong> {user.dob}</p>
               <p><strong>Gender:</strong> {user.gender || "-"}</p>
               <p><strong>Committee:</strong> {user.committee || "-"}</p>
               <p><strong>Sub-Committee:</strong> {user.subCommittee || "-"}</p>
@@ -138,6 +139,8 @@ export default function UserDetails() {
               <p><strong>File Number:</strong> {user.fileNumber || "-"}</p>
               <p><strong>Occupation:</strong> {user.occupation || "-"}</p>
               <p><strong>Expiry Date:</strong> {user.subdate || "-"}</p>
+              <p><strong>ID/Passport:</strong> {user.idpassport || "-"}</p>
+              <p><strong>Nationality</strong> {user.nationality || "-"}</p>
           </div>
         </div>
        

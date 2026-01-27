@@ -10,6 +10,8 @@ import {
 } from "../services/subcommittees";
 import AddSubCommitteeModal from "../components/AddSubcommitteeModel";
 import EditSubCommitteeModal from "../components/EditSubcommitteeModel";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 export default function Subcommittees() {
   const [subcommittees, setCommittees] = useState([]);
@@ -61,8 +63,10 @@ export default function Subcommittees() {
     try {
       await apiDeleteCommittee(id, storedUser.username);
       setCommittees((prev) => prev.filter((c) => c.id !== id));
+                toast.success("Sub-Committee deleted successfully");
     } catch (err) {
       console.error("Error deleting subcommittee:", err);
+                toast.error("Failed to delete Sub-committee");
     }
   };
 
@@ -75,9 +79,11 @@ export default function Subcommittees() {
     try {
       const data = await apiAddCommittee(newSubCommittee);
       setCommittees((prev) => [...prev, data.data]);
+                toast.success(`Sub-Committee "${newSubCommittee.name}" created successfully`);
       closeAddModal();
     } catch (err) {
       console.error("Error adding subcommittee:", err);
+                toast.error("Failed to create Sub-committee");
     }
   };
 
@@ -115,8 +121,10 @@ export default function Subcommittees() {
         prev.map((c) => (c.id === editingCommittee.id ? data.data : c))
       );
       closeEditModal();
+                toast.success(`Sub-Committee "${formData.name}" updated successfully`);
     } catch (err) {
       console.error("Error updating subcommittee:", err);
+                toast.error("Failed to update Sub-committee");
     }
   };
 
@@ -245,6 +253,8 @@ export default function Subcommittees() {
           closeEditModal={closeEditModal}
         />
       )}
+
+     <ToastContainer position="top-right" autoClose={3000} />
     </div>
   );
 }

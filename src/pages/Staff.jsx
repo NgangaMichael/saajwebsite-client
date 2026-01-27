@@ -4,6 +4,8 @@ import { useNavigate } from "react-router-dom";
 import { getUsers } from "../services/users";
 import { applyLeave } from "../services/staff";
 import { applyLoan } from "../services/loans";  // ✅ Import from loans service
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 export default function Staff() {
   const [users, setUsers] = useState([]);
@@ -71,7 +73,10 @@ export default function Staff() {
 
   const handleSubmitLoan = async (e) => {
     e.preventDefault();
-    if (!selectedStaff) return alert("No staff selected!");
+    if (!selectedStaff) {
+      toast.error("No staff selected");
+      return;
+    }
 
     setSubmitting(true);
     try {
@@ -85,7 +90,7 @@ export default function Staff() {
       };
 
       await applyLoan(payload);
-      alert("Loan application submitted successfully!");
+      toast.success("Loan application submitted successfully");
 
       setLoanForm({
         amount: "",
@@ -99,7 +104,7 @@ export default function Staff() {
       modal.hide();
     } catch (err) {
       console.error("Error submitting loan:", err);
-      alert("Failed to submit loan. Try again.");
+      toast.error("Failed to submit loan. Please try again.");
     } finally {
       setSubmitting(false);
     }
@@ -108,7 +113,10 @@ export default function Staff() {
   // ✅ Handle leave submission
   const handleSubmitLeave = async (e) => {
     e.preventDefault();
-    if (!selectedStaff) return alert("No staff selected!");
+    if (!selectedStaff) {
+      toast.error("No staff selected");
+      return;
+    }
 
     setSubmitting(true);
     try {
@@ -119,7 +127,7 @@ export default function Staff() {
       };
 
       await applyLeave(payload);
-      alert("Leave application submitted successfully!");
+      toast.success("Leave application submitted successfully");
 
       setLeaveForm({
         leaveType: "",
@@ -134,7 +142,7 @@ export default function Staff() {
       modal.hide();
     } catch (err) {
       console.error("Error submitting leave:", err);
-      alert("Failed to submit leave. Try again.");
+      toast.error("Failed to submit leave. Please try again.");
     } finally {
       setSubmitting(false);
     }
@@ -463,6 +471,7 @@ export default function Staff() {
           </div>
         </div>
       </div>
+      <ToastContainer position="top-right" autoClose={3000} />
     </div>
   );
 }

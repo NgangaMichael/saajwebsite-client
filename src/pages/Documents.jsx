@@ -12,6 +12,8 @@ import EditDocumentModal from "../components/EditDocumentModal";
 import { getCommittees } from "../services/committees";
 import { getsubCommittees } from "../services/subcommittees";
 import { useSearchParams } from "react-router-dom";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 export default function Documents() {
   const [docs, setDocs] = useState([]);
@@ -94,8 +96,10 @@ export default function Documents() {
     try {
       await apiDeleteDocument(id, storedUser.username);
       setDocs((prev) => prev.filter((d) => d.id !== id));
+          toast.success("Document deleted successfully");
     } catch (err) {
       console.error("Error deleting:", err);
+          toast.error("Failed to delete document");
     }
   };
 
@@ -128,6 +132,9 @@ export default function Documents() {
 
       const data = await apiAddDocument(form);
       setDocs((prev) => [...prev, data.data]);
+
+      toast.success(`Document "${newDoc.documentName}" added successfully`);
+
       setAdding(false);
       setNewDoc({
         documentName: "",
@@ -139,6 +146,7 @@ export default function Documents() {
       });
     } catch (err) {
       console.error("Error adding:", err);
+          toast.error("Failed to add document");
     }
   };
 
@@ -160,9 +168,11 @@ export default function Documents() {
     try {
       const data = await updateDocument(editingDoc.id, formData);
       setDocs((prev) => prev.map((d) => (d.id === editingDoc.id ? data.data : d)));
+          toast.success(`Document "${formData.documentName}" updated successfully`);
       setEditingDoc(null);
     } catch (err) {
       console.error("Error updating:", err);
+          toast.error("Failed to update document");
     }
   };
 
@@ -447,6 +457,8 @@ export default function Documents() {
           subcommittees={subcommittees}    // ✅ added
         />
       )}
+
+      <ToastContainer position="top-right" autoClose={3000} />
     </div>
   );
 }

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api";
 import bgImage from "../images/saajimage.avif";
+import { Eye, EyeOff } from "lucide-react";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -9,6 +10,7 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const currentYear = new Date().getFullYear();
+  const [showPassword, setShowPassword] = useState(false);
 
   // Registration state
   const [registerData, setRegisterData] = useState({
@@ -161,16 +163,29 @@ export default function Login() {
             />
           </div>
 
-          <div>
+          <div className="position-relative">
             <label className="form-label">Password</label>
+
             <input
-              type="password"
-              className="form-control"
+              type={showPassword ? "text" : "password"}
+              className="form-control pe-5"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
               required
             />
+            <span
+              onClick={() => setShowPassword(!showPassword)}
+              style={{
+                position: "absolute",
+                right: "12px",
+                top: "38px",
+                cursor: "pointer",
+                color: "#6c757d",
+              }}
+            >
+              {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+            </span>
           </div>
 
           <button type="submit" className="btn btn-primary w-full" disabled={loading}>
@@ -198,128 +213,27 @@ export default function Login() {
       >
         <div className="modal-dialog modal-lg">
           <div className="modal-content">
-            <div className="modal-header">
-              <h1 className="modal-title fs-5" id="exampleModalLabel">
-                Register Here
+            <div className="modal-header position-relative">
+              <h1
+                className="position-absolute start-50 translate-middle-x text-success fw-bold"
+                id="exampleModalLabel"
+              >
+                SAAJ NAIROBI
               </h1>
+
               <button
                 type="button"
-                className="btn-close"
+                className="btn-close ms-auto"
                 data-bs-dismiss="modal"
                 aria-label="Close"
-              ></button>
+              />
             </div>
 
-            <form onSubmit={handleRegisterSubmit}>
-              <div className="modal-body">
-                <div className="row g-3">
-                  <div className="col-md-6">
-                    <label className="form-label">Username</label>
-                    <input
-                      type="text"
-                      name="username"
-                      value={registerData.username}
-                      onChange={handleRegisterChange}
-                      className="form-control"
-                      required
-                    />
-                  </div>
+            <div class="modal-body">
+            <p>To be added to the system, please send your request to <span className="fw-bold">admin@saaj.co.ke </span>
+Our team will review and activate your access. </p>
+          </div>
 
-                  <div className="col-md-6">
-                    <label className="form-label">Email</label>
-                    <input
-                      type="email"
-                      name="email"
-                      value={registerData.email}
-                      onChange={handleRegisterChange}
-                      className="form-control"
-                      required
-                    />
-                  </div>
-
-                  <div className="col-md-6">
-                    <label className="form-label">Password</label>
-                    <input
-                      type="password"
-                      name="password"
-                      value={registerData.password}
-                      onChange={handleRegisterChange}
-                      className="form-control"
-                      required
-                    />
-                  </div>
-
-                  <div className="col-md-6">
-                    <label className="form-label">Age</label>
-                    <input
-                      type="number"
-                      name="age"
-                      value={registerData.age}
-                      onChange={handleRegisterChange}
-                      className="form-control"
-                    />
-                  </div>
-
-                  <div className="col-md-6">
-                    <label className="form-label">Gender</label>
-                    <select
-                      name="gender"
-                      value={registerData.gender}
-                      onChange={handleRegisterChange}
-                      className="form-control"
-                      required
-                    >
-                      <option value="">Select</option>
-                      <option>Male</option>
-                      <option>Female</option>
-                    </select>
-                  </div>
-
-                  <div className="col-md-6">
-                    <label className="form-label">Marital Status</label>
-                    <select
-                      name="maritalStatus"
-                      value={registerData.maritalStatus}
-                      onChange={handleRegisterChange}
-                      className="form-control"
-                    >
-                      <option value="">Select</option>
-                      <option>Single</option>
-                      <option>Married</option>
-                    </select>
-                  </div>
-
-                  <div className="col-md-12">
-                    <label className="form-label">Member Type</label>
-                    <select
-                      name="membertype"
-                      value={registerData.membertype}
-                      onChange={handleRegisterChange}
-                      className="form-control"
-                      required
-                    >
-                      <option value="">Select</option>
-                      <option>Direct</option>
-                      <option>Indirect</option>
-                    </select>
-                  </div>
-
-                </div>
-              </div>
-
-              <div className="modal-footer">
-                <button
-                  type="button"
-                  className="btn btn-secondary btn-sm"
-                  data-bs-dismiss="modal"
-                >
-                  Close
-                </button>
-                <button type="submit" className="btn btn-primary btn-sm">
-                  Submit
-                </button>
-              </div>
-            </form>
           </div>
         </div>
       </div>

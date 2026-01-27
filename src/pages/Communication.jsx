@@ -8,8 +8,8 @@ import {
 } from "../services/communication";
 import AddCommunicationModal from "../components/AddCommunicationModal";
 import EditCommunicationModal from "../components/EditCommunicationModal";
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 
 export default function Communication() {
@@ -63,8 +63,10 @@ export default function Communication() {
     try {
       await apiDeleteCommunication(id, storedUser.username);
       setCommunications((prev) => prev.filter((c) => c.id !== id));
+          toast.success("Communication deleted successfully");
     } catch (err) {
       console.error("Error deleting communication:", err);
+          toast.error("Failed to delete communication");
     }
   };
 
@@ -346,7 +348,7 @@ export default function Communication() {
           </div>
         </div>
       )}
-        <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} />
+      <ToastContainer position="top-right" autoClose={3000} />
     </div>
   );
 }

@@ -10,6 +10,8 @@ import {
 } from "../services/committees";
 import AddCommitteeModal from "../components/AddCommitteeModal";
 import EditCommitteeModal from "../components/EditCommitteeModal";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 export default function Committees() {
   const [committees, setCommittees] = useState([]);
@@ -57,8 +59,10 @@ export default function Committees() {
     try {
       await apiDeleteCommittee(id, storedUser.username);
       setCommittees((prev) => prev.filter((c) => c.id !== id));
+          toast.success("Committee deleted successfully");
     } catch (err) {
       console.error("Error deleting committee:", err);
+          toast.error("Failed to delete committee");
     }
   };
 
@@ -71,9 +75,11 @@ export default function Committees() {
     try {
       const data = await apiAddCommittee(newCommittee);
       setCommittees((prev) => [...prev, data.data]);
+          toast.success(`Committee "${newCommittee.name}" created successfully`);
       closeAddModal();
     } catch (err) {
       console.error("Error adding committee:", err);
+          toast.error("Failed to create committee");
     }
   };
 
@@ -107,8 +113,10 @@ export default function Committees() {
         prev.map((c) => (c.id === editingCommittee.id ? data.data : c))
       );
       closeEditModal();
+          toast.success(`Committee "${formData.name}" updated successfully`);
     } catch (err) {
       console.error("Error updating committee:", err);
+          toast.error("Failed to update committee");
     }
   };
 
@@ -233,6 +241,8 @@ export default function Committees() {
           closeEditModal={closeEditModal}
         />
       )}
+
+      <ToastContainer position="top-right" autoClose={3000} />
     </div>
   );
 }

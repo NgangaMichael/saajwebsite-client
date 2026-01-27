@@ -3,6 +3,8 @@ import { Plus, Eye, CheckCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { getSurveys } from "../services/survery";
 import AddSurveyModal from "../components/AddSurveyModal";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 export default function Survey() {
   const [surveys, setSurveys] = useState([]);
@@ -129,6 +131,8 @@ export default function Survey() {
           refresh={fetchSurveys}
         />
       )}
+
+    <ToastContainer position="top-right" autoClose={3000} />
     </div>
   );
 }
