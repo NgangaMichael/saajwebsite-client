@@ -18,11 +18,21 @@ export default function Users() {
 
   const storedUser = JSON.parse(localStorage.getItem("user"));
 
+  // Add these to your state declarations
+  const [filters, setFilters] = useState({
+    email: "",
+    phone: "",
+    fileNumber: "",
+    committee: "",
+    designation: ""
+  });
+
   // Add state
   const [adding, setAdding] = useState(false);
   const [newUser, setNewUser] = useState({
     username: "",
     email: "",
+    phone: "",
     password: "",
     age: "",
     dob: "",
@@ -61,9 +71,20 @@ export default function Users() {
     fetchUsers();
   }, []);
 
-  const filteredUsers = users.filter((u) =>
-    u.username?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredUsers = users.filter((u) => {
+    return (
+      (u.username?.toLowerCase().includes(searchTerm.toLowerCase())) &&
+      (u.email?.toLowerCase().includes(filters.email.toLowerCase())) &&
+      (u.phone?.includes(filters.phone)) &&
+      (u.fileNumber?.toLowerCase().includes(filters.fileNumber.toLowerCase())) &&
+      (filters.committee === "" || u.committee === filters.committee) &&
+      (filters.designation === "" || u.designation === filters.designation)
+    );
+  });
+
+  // Extract unique values for the dropdowns
+  const committees = [...new Set(users.map(u => u.committee).filter(Boolean))];
+  const designations = [...new Set(users.map(u => u.designation).filter(Boolean))];
 
   // Delete user
   const deleteUser = async (id) => {
@@ -85,6 +106,7 @@ const editUser = (user) => {
   setFormData({
     username: user.username || "",
     email: user.email || "",
+    phone: user.phone || "",
     password: user.password || "",
     age: user.age || "",
     dob: user.dob || "",
@@ -127,7 +149,7 @@ const editUser = (user) => {
 
   const closeEditModal = () => {
     setEditingUser(null);
-    setFormData({ username: "", email: "" });
+    setFormData({ username: "", email: "", phone: "" });
   };
 
   // Add handlers
@@ -152,6 +174,7 @@ const editUser = (user) => {
     setNewUser({
       username: "",
       email: "",
+      phone: "",
       password: "",
       age: "",
       dob: "",
@@ -271,20 +294,97 @@ const handleDateSelection = async (user, event) => {
     );
   }
 
+  // Helper to update filter state
+  const handleFilterChange = (e) => {
+    setFilters(prev => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+
   return (
     <div className="">
       {/* Header */}
-      <div>
-        <button className="btn btn-primary btn-sm float-end" onClick={() => setAdding(true)}>Add User</button>
-        <input
-          className="form-control float-end w-25 form-control-sm mx-2"
-          type="text"
-          placeholder="Search by username..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
+      {/* Header & Filters */}
+      <div className="mb-4">
+        <div className="d-flex justify-content-between align-items-center mb-3">
+          <h2 className="h5 mb-0">Users Management</h2>
+          <button className="btn btn-primary btn-sm" onClick={() => setAdding(true)}>
+            <Plus size={16} className="me-1" /> Add User
+          </button>
+        </div>
 
-        <h2 className="h5">Users</h2>
+        <div className="row g-2 bg-light p-3 rounded border">
+          {/* Username Search */}
+          <div className="col-md-2">
+            <input
+              className="form-control form-control-sm"
+              type="text"
+              placeholder="Search Username..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+
+          {/* Email Search */}
+          <div className="col-md-2">
+            <input
+              className="form-control form-control-sm"
+              name="email"
+              type="text"
+              placeholder="Search Email..."
+              value={filters.email}
+              onChange={handleFilterChange}
+            />
+          </div>
+
+          {/* Phone Search */}
+          <div className="col-md-2">
+            <input
+              className="form-control form-control-sm"
+              name="phone"
+              type="text"
+              placeholder="Search Phone..."
+              value={filters.phone}
+              onChange={handleFilterChange}
+            />
+          </div>
+
+          {/* File Number Search */}
+          <div className="col-md-2">
+            <input
+              className="form-control form-control-sm"
+              name="fileNumber"
+              type="text"
+              placeholder="Member NO..."
+              value={filters.fileNumber}
+              onChange={handleFilterChange}
+            />
+          </div>
+
+          {/* Committee Dropdown */}
+          <div className="col-md-2">
+            <select 
+              className="form-select form-select-sm" 
+              name="committee" 
+              value={filters.committee} 
+              onChange={handleFilterChange}
+            >
+              <option value="">All Committees</option>
+              {committees.map(c => <option key={c} value={c}>{c}</option>)}
+            </select>
+          </div>
+
+          {/* Designation Dropdown */}
+          <div className="col-md-2">
+            <select 
+              className="form-select form-select-sm" 
+              name="designation" 
+              value={filters.designation} 
+              onChange={handleFilterChange}
+            >
+              <option value="">All Designations</option>
+              {designations.map(d => <option key={d} value={d}>{d}</option>)}
+            </select>
+          </div>
+        </div>
       </div>
 
       <hr />
@@ -298,6 +398,8 @@ const handleDateSelection = async (user, event) => {
               <th scope="col">#</th>
               <th scope="col">Username</th>
               <th scope="col">Email</th>
+              <th scope="col">Phone</th>
+              <th scope="col">Member NO</th>
               <th scope="col">Member</th>
               <th scope="col">Committee</th>
               <th scope="col">Designation</th>
@@ -320,6 +422,8 @@ const handleDateSelection = async (user, event) => {
                   <td>{idx+1}</td>
                   <td>{user.username}</td>
                   <td>{user.email}</td>
+                  <td>{user.phone}</td>
+                  <td>{user.fileNumber}</td>
                   {/* <td>{user.membertype}</td> */}
                   <td
                     style={{
