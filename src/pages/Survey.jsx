@@ -10,6 +10,7 @@ export default function Survey() {
   const [surveys, setSurveys] = useState([]);
   const [loading, setLoading] = useState(true);
   const [adding, setAdding] = useState(false);
+  const pendingCount = surveys.filter(s => !s.alreadySubmitted).length;
 
   const navigate = useNavigate();
   const storedUser = JSON.parse(localStorage.getItem("user"));
@@ -39,6 +40,15 @@ export default function Survey() {
       {/* Header */}
       <div className="d-flex justify-content-between align-items-center mb-3">
         <h5>Surveys</h5>
+
+        <h5>
+          Surveys 
+          {pendingCount > 0 && (
+            <span className="badge bg-danger ms-2" style={{ fontSize: '0.7rem' }}>
+              {pendingCount} Pending
+            </span>
+          )}
+        </h5>
 
         {/* Admin only (optional role check) */}
         {storedUser?.level !== "Level 1" && (

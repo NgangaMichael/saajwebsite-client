@@ -224,7 +224,7 @@ const handleDeleteLeave = async (leaveId) => {
                       )}
 
                       {/* Administrative Actions (Edit/Delete) - Level 3 only */}
-                      {leave.status === "Pending" && JSON.parse(localStorage.getItem("user"))?.level === "Level 3" && (
+                      {JSON.parse(localStorage.getItem("user"))?.level === "Level 3" && (
                         <>
                           <button
                             className="p-1 text-blue-600 hover:text-blue-800 transition bg-transparent border-0 d-flex align-items-center"

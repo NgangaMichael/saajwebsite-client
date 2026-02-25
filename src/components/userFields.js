@@ -14,8 +14,8 @@ export const userFields = [
   { name: "occupation", label: "Occupation", type: "text", required: true },
 
   // 🔽 These two will now load dynamically
-  { name: "committee", label: "Committee", type: "select", required: false },
-  { name: "subCommittee", label: "Sub Committee", type: "select", required: false },
+  { name: "committee", label: "Sub-Committee", type: "select", required: false },
+  { name: "subCommittee", label: "Department", type: "select", required: false },
 
   { name: "designation", label: "Designation", type: "select", required: true, options: ["Member", "Chairman", "Vice Chairman", "Secretary", "Staff"] },
   { name: "subscription", label: "Subscription", type: "select", required: true, options: ["Active", "Inactive"] },

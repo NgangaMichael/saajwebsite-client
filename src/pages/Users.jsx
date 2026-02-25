@@ -40,6 +40,7 @@ export default function Users() {
     nationality: "",
     gender: "",
     level: "",
+    staff: "No",
     maritalStatus: "",
     employmentstatus: "",
     occupation: "",

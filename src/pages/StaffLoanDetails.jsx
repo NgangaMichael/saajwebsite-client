@@ -157,6 +157,12 @@ export default function StaffLoanDetails() {
                       {/* Level 3 Administrative Actions */}
                       {loan.status === "Pending" && loggedInUser?.level === "Level 3" && (
                         <>
+                          <button className="btn btn-success btn-sm" onClick={() => handleUpdateStatus(loan.id, "Approved")} disabled={updatingId === loan.id} title="Approve">
+                            <Check size={14} />
+                          </button>
+                          <button className="btn btn-danger btn-sm" onClick={() => handleUpdateStatus(loan.id, "Rejected")} disabled={updatingId === loan.id} title="Reject">
+                            <X size={14} />
+                          </button>
                           <button 
                             className="p-1 text-blue-600 hover:text-blue-800 transition bg-transparent border-0" 
                             onClick={() => handleEditClick(loan)}

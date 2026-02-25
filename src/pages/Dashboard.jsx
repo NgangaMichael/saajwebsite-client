@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, Outlet, useLocation } from "react-router-dom";
+import { getSurveys } from "../services/survery";
 import {
   Users,
   Puzzle,
@@ -20,6 +21,7 @@ import {
 export default function Dashboard() {
   const [collapsed, setCollapsed] = useState(false);
   const location = useLocation();
+  const [pendingSurveys, setPendingSurveys] = useState(0);
 
   // ✅ Get user info from localStorage
   const storedUser = JSON.parse(localStorage.getItem("user"));
@@ -64,6 +66,19 @@ export default function Dashboard() {
     navItems.push(baseNavItems.find((i) => i.to === "staff"));
   }
 
+  useEffect(() => {
+    const fetchPendingCount = async () => {
+      try {
+        const res = await getSurveys(storedUser.id);
+        const count = res.data.filter(s => !s.alreadySubmitted).length;
+        setPendingSurveys(count);
+      } catch (err) {
+        console.error("Failed to fetch survey count", err);
+      }
+    };
+    if (storedUser?.id) fetchPendingCount();
+  }, [storedUser?.id]);
+
   return (
     <div className="h-screen flex">
       {/* Sidebar */}
@@ -96,7 +111,21 @@ export default function Dashboard() {
               >
                 <span style={{ color: item.color }}>{item.icon}</span>
                 {!collapsed && (
-                  <span className="ml-3 text-sm font-medium">{item.label}</span>
+                  <div className="flex justify-between items-center w-full">
+                    <span className="ml-3 text-sm font-medium">{item.label}</span>
+                    
+                    {/* ✅ SHOW BADGE HERE */}
+                    {item.to === "survey" && pendingSurveys > 0 && (
+                      <span className="bg-red-600 text-white text-[10px] px-2 py-0.5 rounded-full">
+                        {pendingSurveys}
+                      </span>
+                    )}
+                  </div>
+                )}
+
+                {/* ✅ SHOW DOT IF COLLAPSED */}
+                {collapsed && item.to === "survey" && pendingSurveys > 0 && (
+                  <div className="absolute right-2 w-2 h-2 bg-red-600 rounded-full border border-gray-800"></div>
                 )}
               </Link>
             );

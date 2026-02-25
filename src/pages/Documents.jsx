@@ -224,25 +224,50 @@ export default function Documents() {
   // Enhanced filtering logic
   const filteredDocuments = docs
     .filter((doc) => {
-      // Search term filter
+      // 1. Search term filter
       const matchesSearch = doc.documentName?.toLowerCase().includes(searchTerm.toLowerCase());
       
-      // Committee filter
+      // 2. Committee filter (UI Dropdown)
       const matchesCommittee = !filterCommittee || doc.committee === filterCommittee;
       
-      // Subcommittee filter
+      // 3. Subcommittee filter (UI Dropdown)
       const matchesSubcommittee = !filterSubcommittee || doc.subcommittee === filterSubcommittee;
       
-      // Type filter
+      // 4. Type filter
       const matchesType = !filterType || doc.type === filterType;
 
       return matchesSearch && matchesCommittee && matchesSubcommittee && matchesType;
     })
     .filter((doc) => {
-      // Level-based visibility
+      // --- Level-based visibility logic ---
+      
+      // Level 3: Sees everything
       if (userLevel === "Level 3") return true;
-      if (userLevel === "Level 2" && (doc.status === 1 || doc.status2 === 1)) return true;
+
+      // Level 2: Conditional visibility based on Committee/Subcommittee assignment
+      if (userLevel === "Level 2") {
+        const isPublished = doc.status === 1 || doc.status2 === 1;
+        if (!isPublished) return false;
+
+        // Requirement: If doc committee/subcommittee are "all" or empty, show to all Level 2
+        const docCommitteeEmpty = !doc.committee || doc.committee.toLowerCase() === "all" || doc.committee === "";
+        const docSubEmpty = !doc.subcommittee || doc.subcommittee.toLowerCase() === "all" || doc.subcommittee === "";
+
+        if (docCommitteeEmpty && docSubEmpty) {
+          return true;
+        }
+
+        // Requirement: If specified, match user's committee/subcommittee
+        // Note: Using storedUser.subCommittee (camelCase) based on your example object
+        const matchesUserCommittee = doc.committee === storedUser?.committee;
+        const matchesUserSubcommittee = doc.subcommittee === storedUser?.subCommittee;
+
+        return matchesUserCommittee && matchesUserSubcommittee;
+      }
+
+      // Level 1: Only sees if status is 1
       if (userLevel === "Level 1" && doc.status === 1) return true;
+
       return false;
     });
 
