@@ -36,7 +36,7 @@ export default function AddSubCommitteeModal({
   return (
     <div className="fixed inset-0 bg-black/40 flex justify-center items-center z-50">
       <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-lg">
-        <h3 className="text-xl font-semibold mb-4">Add Sub-Committee</h3>
+        <h3 className="text-xl font-semibold mb-4">Add Department</h3>
 
         <div>
           {/* Name */}

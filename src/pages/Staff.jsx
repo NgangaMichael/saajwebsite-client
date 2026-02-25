@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { Eye } from "lucide-react";
+import { Eye, Plus, Pencil, Trash2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { getUsers } from "../services/users";
+import { getUsers, addUser as apiAddUser, deleteUser, updateUser } from "../services/users";
+import AddUserModal from "../components/AddUserModal";
 import { applyLeave } from "../services/staff";
-import { applyLoan } from "../services/loans";  // ✅ Import from loans service
+import { applyLoan } from "../services/loans";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -18,6 +19,7 @@ export default function Staff() {
     endDate: "",
     reason: "",
   });
+  const [adding, setAdding] = useState(false);
 
   const [loanForm, setLoanForm] = useState({
     amount: "",
@@ -26,6 +28,33 @@ export default function Staff() {
     reason: "",
   });
   const [submitting, setSubmitting] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [editStaff, setEditStaff] = useState(null);
+
+  const [newStaff, setNewStaff] = useState({
+    username: "",
+    email: "",
+    phone: "",
+    password: "",
+    age: "",
+    dob: "",
+    idpassport: "",
+    nationality: "",
+    gender: "",
+    level: "Level 1",
+    maritalStatus: "",
+    employmentstatus: "Employed",
+    occupation: "",
+    committee: "",
+    subCommittee: "",
+    designation: "Staff", // ✅ Automatically set to Staff
+    staff: "yes",
+    subscription: "Active",
+    membertype: "Direct",
+    fileNumber: "",
+    approveStatus: "Approved",
+    waveSubscriptionStatus: "No",
+  });
 
   const navigate = useNavigate();
 
@@ -156,18 +185,71 @@ export default function Staff() {
     );
   }
 
+  // Handle Input Changes
+  const handleAddChange = (e) => {
+    setNewStaff({ ...newStaff, [e.target.name]: e.target.value });
+  };
+
+  // Submit New Staff
+  const saveNewStaff = async () => {
+    try {
+      const response = await apiAddUser(newStaff);
+      setUsers((prev) => [...prev, response.data]);
+      toast.success("Staff member created successfully!");
+      setAdding(false);
+      // Reset form
+      setNewStaff({ ...newStaff, username: "", email: "", password: "", phone: "" }); 
+    } catch (err) {
+      console.error("Error adding staff:", err);
+      toast.error("Failed to create staff member");
+    }
+  };
+
+  // ✅ Handle Delete Staff
+const handleDelete = async (id) => {
+  if (window.confirm("Are you sure you want to delete this staff member?")) {
+    try {
+      await deleteUser(id);
+      setUsers(users.filter((user) => user.id !== id));
+      toast.success("Staff member deleted successfully");
+    } catch (err) {
+      console.error("Error deleting staff:", err);
+      toast.error("Failed to delete staff member");
+    }
+  }
+};
+
+// ✅ Handle Update Staff
+const handleUpdateStaff = async () => {
+  try {
+    const response = await updateUser(editStaff.id, editStaff);
+    setUsers(users.map((u) => (u.id === editStaff.id ? response.data : u)));
+    toast.success("Staff updated successfully!");
+    setEditing(false);
+  } catch (err) {
+    console.error("Error updating staff:", err);
+    toast.error("Failed to update staff");
+  }
+};
+
   return (
     <div>
       {/* Header */}
       <div>
         {loggedInUser?.designation !== "Staff" && (
-          <input
-            className="form-control float-end w-25 form-control-sm mx-2"
-            type="text"
-            placeholder="Search by username..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
+          <div> 
+            <input
+              className="form-control float-end w-25 form-control-sm mx-2"
+              type="text"
+              placeholder="Search by username..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+
+            <button className="btn btn-primary btn-sm d-flex align-items-center gap-1 float-end" onClick={() => setAdding(true)}>
+              <Plus size={16} /> Add Staff
+            </button>
+          </div>
         )}
         <h2 className="h5">Staff</h2>
       </div>
@@ -234,6 +316,32 @@ export default function Staff() {
                         <Eye size={18} />
                       </button>
 
+                      {/* ✅ Edit Button */}
+                      {/* ✅ Only Level 3 can Edit */}
+                        {loggedInUser?.level === "Level 3" && (
+                          <button
+                            onClick={() => {
+                              setEditStaff(user);
+                              setEditing(true);
+                            }}
+                            className="text-blue-600 hover:text-blue-800 transition"
+                            title="Edit Staff"
+                          >
+                            <Pencil size={18} />
+                          </button>
+                        )}
+
+                        {/* ✅ Only Level 3 can Delete */}
+                        {loggedInUser?.level === "Level 3" && (
+                          <button
+                            onClick={() => handleDelete(user.id)}
+                            className="text-red-600 hover:text-red-800 transition"
+                            title="Delete Staff"
+                          >
+                            <Trash2 size={18} />
+                          </button>
+                        )}
+
                       <button
                         type="button"
                         className="btn btn-primary btn-sm"
@@ -241,10 +349,9 @@ export default function Staff() {
                         data-bs-target="#leaveModal"
                         onClick={() => setSelectedStaff(user)}
                       >
-                        Apply Leave
+                        Leave
                       </button>
 
-                      {/* ✅ NEW: Apply Loan Button */}
                       <button
                         type="button"
                         className="btn btn-success btn-sm"
@@ -252,7 +359,7 @@ export default function Staff() {
                         data-bs-target="#loanModal"
                         onClick={() => setSelectedStaff(user)}
                       >
-                        Apply Loan
+                        Loan
                       </button>
                     </div>
                   </td>
@@ -471,6 +578,27 @@ export default function Staff() {
           </div>
         </div>
       </div>
+
+      {adding && (
+        <AddUserModal
+          newUser={newStaff}
+          handleAddChange={handleAddChange}
+          addUser={saveNewStaff}
+          closeAddModal={() => setAdding(false)}
+        />
+      )}
+
+      {/* ✅ Edit Modal (Assuming AddUserModal can be repurposed) */}
+      {editing && (
+        <AddUserModal
+          newUser={editStaff}
+          isEditing={true} // You might need to add this prop to your modal
+          handleAddChange={(e) => setEditStaff({ ...editStaff, [e.target.name]: e.target.value })}
+          addUser={handleUpdateStaff}
+          closeAddModal={() => setEditing(false)}
+        />
+      )}
+      
       <ToastContainer position="top-right" autoClose={3000} />
     </div>
   );

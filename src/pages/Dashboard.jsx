@@ -13,7 +13,8 @@ import {
   Activity,
   Settings,
   Users2,
-  List
+  List,
+  Server
 } from "lucide-react";
 
 export default function Dashboard() {
@@ -29,14 +30,15 @@ export default function Dashboard() {
   const baseNavItems = [
     { to: "profile", label: "Profile", icon: <Settings size={20} />, color: "#228cc5ff" },
     { to: "users", label: "Users", icon: <Users size={20} />, color: "#22c55e" },
-    { to: "committees", label: "Committees", icon: <Layers size={20} />, color: "#3b82f6" },
-    { to: "subcommittees", label: "Sub-Committees", icon: <Puzzle size={20} />, color: "#ff6e07ff" },
+    { to: "committees", label: "Sub-Committees", icon: <Layers size={20} />, color: "#3b82f6" },
+    { to: "subcommittees", label: "Departments", icon: <Puzzle size={20} />, color: "#ff6e07ff" },
     // { to: "documents", label: "SAAJ Documents", icon: <FileText size={20} />, color: "#f59e0b" },
     { to: "homedocs", label: "SAAJ Documents", icon: <FileText size={20} />, color: "#f59e0b" },
     { to: "logs", label: "Logs", icon: <Activity size={20} />, color: "#ec4899" },
     { to: "communication", label: "Send Message", icon: <MessageSquare size={20} />, color: "#8b5cf6" },
     // { to: "inbox", label: "Inbox", icon: <Inbox size={20} />, color: "#06b6d4" },
     { to: "staff", label: "Staff", icon: <Users2 size={20} />, color: "#b80c0cff" },
+    { to: "service", label: "Services", icon: <Server size={20} />, color: "rgb(12, 167, 184)" },
     { to: "survey", label: "Survey", icon: <List size={20} />, color: "#b80c6eff" },
   ];
 
@@ -46,7 +48,7 @@ export default function Dashboard() {
   if (userLevel === "Level 1") {
     navItems = baseNavItems.filter(
       (item) =>
-        ["profile", "homedocs", "communication", "inbox", "survey"].includes(item.to)
+        ["profile", "homedocs", "committees", "communication", "inbox", "survey", "service"].includes(item.to)
     );
   } else if (userLevel === "Level 2") {
     navItems = baseNavItems.filter(

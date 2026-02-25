@@ -7,6 +7,7 @@ import {
   updateDocument,
   deleteDocument as apiDeleteDocument,
 } from "../services/documents";
+
 import AddDocumentModal from "../components/AddDocumentModal";
 import EditDocumentModal from "../components/EditDocumentModal";
 import { getCommittees } from "../services/committees";
@@ -250,11 +251,12 @@ export default function Documents() {
   return (
     <div className="">
       <div>
-        {userLevel !== "Level 1" && (
+        {/* add document functionality was moved to the homedoc file, if this is uncommented it will still work  */}
+        {/* {userLevel !== "Level 1" && (
           <button className="btn btn-primary btn-sm float-end" onClick={() => setAdding(true)}>
             Add Document
           </button>
-        )}
+        )} */}
         <input
           className="form-control float-end w-25 form-control-sm mx-2"
           type="text"
@@ -267,75 +269,6 @@ export default function Documents() {
 
       <hr />
 
-      {/* Filter Section */}
-      <div className="mb-3 p-3 bg-light rounded">
-        <div className="row g-2 align-items-end">
-          <div className="col-md-3">
-            <label className="form-label small mb-1">Filter by Committee</label>
-            <select
-              className="form-select form-select-sm"
-              value={filterCommittee}
-              onChange={(e) => {
-                setFilterCommittee(e.target.value);
-                setFilterSubcommittee(""); // Reset subcommittee when committee changes
-              }}
-            >
-              <option value="">All Committees</option>
-              {committees.map((committee) => (
-                <option key={committee.id} value={committee.name}>
-                  {committee.name}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="col-md-3">
-            <label className="form-label small mb-1">Filter by Sub-Committee</label>
-            <select
-              className="form-select form-select-sm"
-              value={filterSubcommittee}
-              onChange={(e) => setFilterSubcommittee(e.target.value)}
-            >
-              <option value="">All Sub-Committees</option>
-              {docs
-                .map(doc => doc.subcommittee)
-                .filter((value, index, self) => value && self.indexOf(value) === index)
-                .sort()
-                .map((subcommittee, idx) => (
-                  <option key={idx} value={subcommittee}>
-                    {subcommittee}
-                  </option>
-                ))}
-            </select>
-          </div>
-
-          {/* <div className="col-md-3">
-            <label className="form-label small mb-1">Filter by Type</label>
-            <select
-              className="form-select form-select-sm"
-              value={filterType}
-              onChange={(e) => setFilterType(e.target.value)}
-            >
-              <option value="">All Types</option>
-              {uniqueTypes.sort().map((type, idx) => (
-                <option key={idx} value={type}>
-                  {type}
-                </option>
-              ))}
-            </select>
-          </div> */}
-
-          <div className="col-md-3">
-            <button
-              className="btn btn-secondary btn-sm w-100"
-              onClick={clearFilters}
-            >
-              Clear Filters
-            </button>
-          </div>
-        </div>
-      </div>
-
       <div className="">
         <table className="table table-hover table-bordered">
           <thead className="table-dark">
@@ -344,7 +277,6 @@ export default function Documents() {
               <th scope="col">Document</th>
               <th scope="col">Uploaded By</th>
               <th scope="col">Type</th>
-              <th scope="col">Committee</th>
               <th scope="col">Sub-Committee</th>
               <th scope="col">Date</th>
               <th scope="col">Actions</th>
@@ -363,7 +295,6 @@ export default function Documents() {
                 <td>{doc.uploadedBy}</td>
                 <td>{doc.type || "-"}</td>
                 <td>{doc.committee || "-"}</td>
-                <td>{doc.subcommittee || "-"}</td>
                 <td>{new Date(doc.createdAt).toLocaleDateString()}</td>
                 <td>
                   <div className="flex justify-center gap-3">

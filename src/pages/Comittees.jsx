@@ -24,6 +24,7 @@ export default function Committees() {
   const [newCommittee, setNewCommittee] = useState({
     name: "",
     head: "",
+    mcrep: "",
     subCommittee: "",
   });
 
@@ -32,6 +33,7 @@ export default function Committees() {
   const [formData, setFormData] = useState({
     name: "",
     head: "",
+    mcrep: "",
     subCommittee: "",
   });
 
@@ -88,6 +90,7 @@ export default function Committees() {
     setNewCommittee({
       name: "",
       head: "",
+      mcrep: "",
       subCommittee: "",
     });
   };
@@ -98,6 +101,7 @@ export default function Committees() {
     setFormData({
       name: committee.name || "",
       head: committee.head || "",
+      mcrep: committee.mcrep || "",
       subCommittee: committee.subCommittee || "",
     });
   };
@@ -125,6 +129,7 @@ export default function Committees() {
     setFormData({
       name: "",
       head: "",
+      mcrep: "",
       subCommittee: "",
     });
   };
@@ -145,7 +150,13 @@ export default function Committees() {
     <div className="">
       {/* Header */}
       <div>
-        <button className="btn btn-primary btn-sm float-end" onClick={() => setAdding(true)}>Add Committee</button>
+        {/* ✅ Wrap the Add button as well */}
+        {storedUser?.level !== "Level 1" && (
+          <button className="btn btn-primary btn-sm float-end" onClick={() => setAdding(true)}>
+            Add Sub-Committee
+          </button>
+        )}
+        {/* <button className="btn btn-primary btn-sm float-end" onClick={() => setAdding(true)}>Add Sub-Committee</button> */}
         <input
           className="form-control float-end w-25 form-control-sm mx-2"
           type="text"
@@ -154,7 +165,7 @@ export default function Committees() {
           onChange={(e) => setSearchTerm(e.target.value)}
         />
 
-        <h2 className="h5">Committees</h2>
+        <h2 className="h5">Sub-Committees</h2>
       </div>
 
       <hr />
@@ -165,8 +176,9 @@ export default function Committees() {
           <thead className="table-dark">
             <tr className="">
               <th scope="col">#</th>
-              <th scope="col">Committee</th>
+              <th scope="col">Sub-Committee</th>
               <th scope="col">Head</th>
+              <th scope="col">MC-REP</th>
               <th scope="col">Date</th>
               <th scope="col">Actions</th>
             </tr>
@@ -189,8 +201,40 @@ export default function Committees() {
                   <td>{idx+1}</td>
                   <td>{committee.name}</td>
                   <td>{committee.head}</td>
+                  <td>{committee.mcrep}</td>
                   <td>{new Date(committee.createdAt).toLocaleDateString()}</td>
                   <td>
+                    <div className="flex justify-center gap-3">
+                      <button
+                        onClick={() => navigate(`${committee.id}`)}
+                        className="text-green-600 hover:text-green-800 transition"
+                        title="View details"
+                      >
+                        <Eye size={18} />
+                      </button>
+
+                      {/* ✅ Only show Pencil and Trash if level is NOT Level 1 */}
+                      {storedUser?.level !== "Level 1" && (
+                        <>
+                          <button
+                            onClick={() => editCommittee(committee)}
+                            className="text-blue-600 hover:text-blue-800 transition"
+                            title="Edit committee"
+                          >
+                            <Pencil size={18} />
+                          </button>
+                          <button
+                            onClick={() => deleteCommittee(committee.id)}
+                            className="text-red-600 hover:text-red-800 transition"
+                            title="Delete committee"
+                          >
+                            <Trash2 size={18} />
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  </td>
+                  {/* <td>
                     <div className="flex justify-center gap-3">
                       <button
                         onClick={() => navigate(`${committee.id}`)}
@@ -214,7 +258,7 @@ export default function Committees() {
                         <Trash2 size={18} />
                       </button>
                     </div>
-                  </td>
+                  </td> */}
                 </tr>
               ))
             )}

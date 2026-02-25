@@ -29,7 +29,7 @@ export default function AddCommitteeModal({
   return (
     <div className="fixed inset-0 bg-black/40 flex justify-center items-center z-50">
       <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-lg">
-        <h3 className="text-xl font-semibold mb-4">Add Committee</h3>
+        <h3 className="text-xl font-semibold mb-4">Add Sub-Committee</h3>
 
         <div className="">
           <input
@@ -50,6 +50,26 @@ export default function AddCommitteeModal({
             required
           >
             <option value="">Select Head</option>
+            {loading ? (
+              <option>Loading users...</option>
+            ) : (
+              users.map((user) => (
+                <option key={user.id} value={user.username}>
+                  {user.username}
+                </option>
+              ))
+            )}
+          </select>
+
+          {/* mcrep Dropdown */}
+          <select
+            name="mcrep"
+            value={newCommittee.mcrep}
+            onChange={handleAddChange}
+            className="form-control mt-2"
+            required
+          >
+            <option value="">Select MC-REP</option>
             {loading ? (
               <option>Loading users...</option>
             ) : (

@@ -57,15 +57,27 @@ export default function Users() {
 
   // Fetch users
   const fetchUsers = async () => {
-    try {
-      const data = await getUsers();
-      setUsers(data.data);
-    } catch (err) {
-      console.error("Error fetching users:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  try {
+    const data = await getUsers();
+    
+    // ✅ Filter out users who are marked as staff
+    // This assumes your staff users have { staff: "Yes" } 
+    // or { designation: "Staff" }
+    const nonStaffUsers = data.data.filter((user) => {
+      const isStaffField = user.staff?.toLowerCase() === "yes";
+      const isStaffDesignation = user.designation?.toLowerCase() === "staff";
+      
+      // Return true only if they are NOT staff
+      return !isStaffField && !isStaffDesignation;
+    });
+
+    setUsers(nonStaffUsers);
+  } catch (err) {
+    console.error("Error fetching users:", err);
+  } finally {
+    setLoading(false);
+  }
+};
 
   useEffect(() => {
     fetchUsers();
@@ -401,7 +413,7 @@ const handleDateSelection = async (user, event) => {
               <th scope="col">Phone</th>
               <th scope="col">Member NO</th>
               <th scope="col">Member</th>
-              <th scope="col">Committee</th>
+              <th scope="col">Sub-Committee</th>
               <th scope="col">Designation</th>
               <th scope="col">Date</th>
               <th scope="col">Actions</th>

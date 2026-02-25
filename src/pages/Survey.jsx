@@ -41,12 +41,14 @@ export default function Survey() {
         <h5>Surveys</h5>
 
         {/* Admin only (optional role check) */}
-        <button
-          className="btn btn-primary btn-sm"
-          onClick={() => setAdding(true)}
-        >
-          <Plus size={16} /> Create Survey
-        </button>
+        {storedUser?.level !== "Level 1" && (
+          <button
+            className="btn btn-primary btn-sm"
+            onClick={() => setAdding(true)}
+          >
+            <Plus size={16} /> Create Survey
+          </button>
+        )}
       </div>
 
       <hr />

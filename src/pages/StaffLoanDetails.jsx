@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { getLoansByUser, updateLoan } from "../services/loans"; // Ensure this path is correct
+import { Pencil, Trash2 } from "lucide-react";
+import { deleteLoan } from "../services/loans";
+import { getLoansByUser, updateLoan } from "../services/loans";
 import { ArrowLeft, Check, X } from "lucide-react";
 
 export default function StaffLoanDetails() {
@@ -12,6 +14,56 @@ export default function StaffLoanDetails() {
   const [updatingId, setUpdatingId] = useState(null);
 
   const adminName = localStorage.getItem("username") || "Admin";
+
+  const [editingLoan, setEditingLoan] = useState(null);
+  const [editFormData, setEditFormData] = useState({
+    amount: "",
+    purpose: "",
+    repaymentMonths: "",
+    reason: ""
+  });
+
+  const loggedInUser = JSON.parse(localStorage.getItem("user"));
+
+  // Handle Edit Click
+  const handleEditClick = (loan) => {
+    setEditingLoan(loan);
+    setEditFormData({
+      amount: loan.amount,
+      purpose: loan.purpose,
+      repaymentMonths: loan.repaymentMonths,
+      reason: loan.reason || ""
+    });
+    const modal = new window.bootstrap.Modal(document.getElementById('editLoanModal'));
+    modal.show();
+  };
+
+  // Submit Update
+  const handleUpdateLoan = async (e) => {
+    e.preventDefault();
+    setUpdatingId(editingLoan.id);
+    try {
+      await updateLoan(editingLoan.id, editFormData);
+      const modal = window.bootstrap.Modal.getInstance(document.getElementById('editLoanModal'));
+      modal.hide();
+      fetchLoans();
+    } catch (err) {
+      alert("Failed to update loan.");
+    } finally {
+      setUpdatingId(null);
+    }
+  };
+
+  // Handle Delete
+  const handleDeleteLoan = async (loanId) => {
+    if (!window.confirm("Are you sure you want to delete this loan application?")) return;
+    try {
+      await deleteLoan(loanId);
+      setLoans(loans.filter(l => l.id !== loanId));
+    } catch (err) {
+      alert("Failed to delete loan.");
+    }
+  };
 
   const fetchLoans = async () => {
     try {
@@ -79,7 +131,7 @@ export default function StaffLoanDetails() {
               {loans.map((loan, idx) => (
                 <tr key={loan.id}>
                   <td>{idx + 1}</td>
-                  <td><strong>${loan.amount}</strong></td>
+                  <td><strong>Ksh: {loan.amount}</strong></td>
                   <td>{loan.purpose}</td>
                   <td>{loan.repaymentMonths}</td>
                   <td>
@@ -90,12 +142,38 @@ export default function StaffLoanDetails() {
                   <td>{loan.approvedBy || "-"}</td>
                   <td>{new Date(loan.createdAt).toLocaleDateString()}</td>
                   <td>
-                    {loan.status === "Pending" && (
-                      <div className="d-flex gap-2">
-                        <button className="btn btn-success btn-sm" onClick={() => handleUpdateStatus(loan.id, "Approved")} disabled={updatingId === loan.id}><Check size={14} /></button>
-                        <button className="btn btn-danger btn-sm" onClick={() => handleUpdateStatus(loan.id, "Rejected")} disabled={updatingId === loan.id}><X size={14} /></button>
-                      </div>
-                    )}
+                    <div className="d-flex align-items-center gap-2">
+                      {loan.status === "Pending" && (
+                        <>
+                          <button className="btn btn-success btn-sm" onClick={() => handleUpdateStatus(loan.id, "Approved")} disabled={updatingId === loan.id} title="Approve">
+                            <Check size={14} />
+                          </button>
+                          <button className="btn btn-danger btn-sm" onClick={() => handleUpdateStatus(loan.id, "Rejected")} disabled={updatingId === loan.id} title="Reject">
+                            <X size={14} />
+                          </button>
+                        </>
+                      )}
+
+                      {/* Level 3 Administrative Actions */}
+                      {loan.status === "Pending" && loggedInUser?.level === "Level 3" && (
+                        <>
+                          <button 
+                            className="p-1 text-blue-600 hover:text-blue-800 transition bg-transparent border-0" 
+                            onClick={() => handleEditClick(loan)}
+                            title="Edit Loan"
+                          >
+                            <Pencil size={18} />
+                          </button>
+                          <button 
+                            className="p-1 text-red-600 hover:text-red-800 transition bg-transparent border-0" 
+                            onClick={() => handleDeleteLoan(loan.id)}
+                            title="Delete Loan"
+                          >
+                            <Trash2 size={18} />
+                          </button>
+                        </>
+                      )}
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -103,6 +181,74 @@ export default function StaffLoanDetails() {
           </table>
         </div>
       )}
+
+      {/* ✅ Edit Loan Modal */}
+      <div className="modal fade" id="editLoanModal" tabIndex="-1" aria-hidden="true">
+        <div className="modal-dialog modal-dialog-centered">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h5 className="modal-title">Edit Loan Application</h5>
+              <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form onSubmit={handleUpdateLoan}>
+              <div className="modal-body">
+                <div className="mb-3">
+                  <label className="form-label">Amount</label>
+                  <input 
+                    type="number" 
+                    className="form-control"
+                    value={editFormData.amount}
+                    onChange={(e) => setEditFormData({...editFormData, amount: e.target.value})}
+                    required
+                  />
+                </div>
+                <div className="mb-3">
+                  <label className="form-label">Purpose</label>
+                  <select 
+                    className="form-select"
+                    value={editFormData.purpose}
+                    onChange={(e) => setEditFormData({...editFormData, purpose: e.target.value})}
+                    required
+                  >
+                    <option value="Emergency">Emergency</option>
+                    <option value="Education">Education</option>
+                    <option value="Medical">Medical</option>
+                    <option value="Housing">Housing</option>
+                    <option value="Business">Business</option>
+                    <option value="Personal">Personal</option>
+                  </select>
+                </div>
+                <div className="mb-3">
+                  <label className="form-label">Repayment Period (Months)</label>
+                  <input 
+                    type="number" 
+                    className="form-control"
+                    value={editFormData.repaymentMonths}
+                    onChange={(e) => setEditFormData({...editFormData, repaymentMonths: e.target.value})}
+                    required
+                  />
+                </div>
+                <div className="mb-3">
+                  <label className="form-label">Reason</label>
+                  <textarea 
+                    className="form-control" 
+                    rows="3"
+                    value={editFormData.reason}
+                    onChange={(e) => setEditFormData({...editFormData, reason: e.target.value})}
+                    required
+                  ></textarea>
+                </div>
+              </div>
+              <div className="modal-footer">
+                <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" className="btn btn-primary" disabled={updatingId !== null}>
+                  {updatingId !== null ? "Saving..." : "Save Changes"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

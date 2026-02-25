@@ -9,6 +9,7 @@ export default function AddDocumentModal({
   closeAddModal,
   committees,
   subcommittees,
+  folders,
 }) {
   return (
     <div className="fixed inset-0 bg-black/40 flex justify-center items-center z-50">
@@ -57,22 +58,29 @@ export default function AddDocumentModal({
             value={newDoc.type}
             onChange={handleAddChange}
             className="w-full border rounded p-2 mb-2"
+            required
           >
-            <option value="">-- Select Document Type --</option>
-            <option value="SOP">SOP</option>
-            <option value="TOR">TOR</option>
-            <option value="REPORTS">REPORTS</option>
-            <option value="CONSTITUTION">CONSTITUTION</option>
+            <option value="">-- Select Folder/Type --</option>
+            {folders && folders.length > 0 ? (
+              folders.map((f) => (
+                <option key={f.id} value={f.foldername}>
+                  {f.foldername}
+                </option>
+              ))
+            ) : (
+              <option disabled>No folders found</option>
+            )}
           </select>
 
-          {/* ✅ Committee Dropdown */}
+          {/* ✅ Committee Dropdown changed to sub committee only in writing not on db*/}
           <select
             name="committeeId"
             value={newDoc.committeeId}
             onChange={handleAddChange}
             className="w-full border rounded p-2 mb-2"
           >
-            <option value="">-- Select Committee --</option>
+            <option value="">-- Select Sub-Committee --</option>
+            <option value="All">All Sub-Committees</option>
             {committees.map((c) => (
               <option key={c.id} value={c.name}>
                 {c.name}
@@ -80,7 +88,7 @@ export default function AddDocumentModal({
             ))}
           </select>
 
-          {/* ✅ Subcommittee Dropdown */}
+          {/* ✅ Subcommittee Dropdown now is departments */}
           <select
             name="subcommitteeId"
             value={newDoc.subcommitteeId}
@@ -88,7 +96,8 @@ export default function AddDocumentModal({
             className="w-full border rounded p-2 mb-2"
             disabled={!newDoc.committeeId}
           >
-            <option value="">-- Select Subcommittee --</option>
+            <option value="">-- Select Departments --</option>
+            <option value="All">All Departments</option>
             {subcommittees.map((s) => (
               <option key={s.id} value={s.name}>
                 {s.name}
@@ -105,7 +114,7 @@ export default function AddDocumentModal({
           />
 
           {/* ✅ Status Checkbox */}
-          <div className="flex items-center gap-2 mb-2">
+          {/* <div className="flex items-center gap-2 mb-2">
             <input
               type="checkbox"
               name="status"
@@ -119,7 +128,7 @@ export default function AddDocumentModal({
             <label className="text-sm">
               {newDoc.status === 1 ? "Active" : "Inactive"}
             </label>
-          </div>
+          </div> */}
         </div>
 
         <div className="flex justify-end gap-2 mt-6">

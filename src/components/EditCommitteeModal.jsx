@@ -28,7 +28,7 @@ export default function EditCommitteeModal({
   return (
     <div className="fixed inset-0 bg-black/40 flex justify-center items-center z-50">
       <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-lg">
-        <h3 className="text-xl font-semibold mb-4">Edit Committee</h3>
+        <h3 className="text-xl font-semibold mb-4">Edit Sub-Committee</h3>
 
         <div className="">
           <input
@@ -49,6 +49,26 @@ export default function EditCommitteeModal({
             required
           >
             <option value="">Select Head</option>
+            {loading ? (
+              <option>Loading users...</option>
+            ) : (
+              users.map((user) => (
+                <option key={user.id} value={user.username}>
+                  {user.username}
+                </option>
+              ))
+            )}
+          </select>
+
+          {/* mcrep Dropdown */}
+          <select
+            name="mcrep"
+            value={formData.mcrep}
+            onChange={handleEditChange}
+            className="form-control mt-2"
+            required
+          >
+            <option value="">Select MC-REP</option>
             {loading ? (
               <option>Loading users...</option>
             ) : (

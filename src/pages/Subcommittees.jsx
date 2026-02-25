@@ -155,7 +155,7 @@ export default function Subcommittees() {
     <div className="">
       {/* Header */}
       <div>
-        <button className="btn btn-primary btn-sm float-end" onClick={() => setAdding(true)}>Add Subcommittee</button>
+        <button className="btn btn-primary btn-sm float-end" onClick={() => setAdding(true)}>Add Departments</button>
         <input
           className="form-control float-end w-25 form-control-sm mx-2"
           type="text"
@@ -164,7 +164,7 @@ export default function Subcommittees() {
           onChange={(e) => setSearchTerm(e.target.value)}
         />
 
-        <h2 className="h5">Subcommittees</h2>
+        <h2 className="h5">Departments</h2>
       </div>
 
       <hr />
@@ -175,9 +175,9 @@ export default function Subcommittees() {
           <thead className="table-dark">
             <tr className="">
               <th scope="col">#</th>
-              <th scope="col">Subcommittee</th>
+              <th scope="col">Department</th>
               <th scope="col">Head</th>
-              <th scope="col">Committee</th>
+              <th scope="col">Sub-Committee</th>
               <th scope="col">Date</th>
               <th scope="col">Actions</th>
             </tr>

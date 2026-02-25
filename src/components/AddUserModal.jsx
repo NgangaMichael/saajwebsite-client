@@ -47,6 +47,11 @@ export default function AddUserModal({ newUser, handleAddChange, addUser, closeA
 
         <form className="grid grid-cols-2 gap-4" onSubmit={handleSubmit}>
           {userFields.map((field) => {
+            // ✅ Logic: If we are on the Staff page (designation is fixed), hide the field
+            if (field.name === "designation" && newUser.designation === "Staff") {
+              return null; 
+            }
+
             let options = field.options || [];
 
             // Inject DB data for these fields
