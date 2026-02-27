@@ -20,7 +20,7 @@ export const userFields = [
   { name: "designation", label: "Designation", type: "select", required: true, options: ["Member", "Chairman", "Vice Chairman", "Secretary", "Staff"] },
   { name: "subscription", label: "Subscription", type: "select", required: true, options: ["Active", "Inactive"] },
   { name: "membertype", label: "Member Type", type: "select", required: true, options: ["Direct", "Indirect"] },
-  { name: "fileNumber", label: "File Number", type: "text", required: true, },
+  { name: "fileNumber", label: "File Number", type: "text" },
   { name: "approveStatus", label: "Approve Status", type: "select", required: true, options: ["Approved", "Not Approved"] },
   { name: "waveSubscriptionStatus", label: "Wave Subscription", type: "select", required: true, options: ["Yes", "No"] },
 ];

@@ -19,7 +19,8 @@ export default function StaffLeaveDetails() {
     leaveType: "",
     startDate: "",
     endDate: "",
-    reason: ""
+    reason: "",
+    days: "" ,
   });
 
   // Open Edit Modal and pre-fill data
@@ -29,7 +30,8 @@ export default function StaffLeaveDetails() {
       leaveType: leave.leaveType,
       startDate: leave.startDate.split('T')[0], // Ensure YYYY-MM-DD format for input
       endDate: leave.endDate.split('T')[0],
-      reason: leave.reason
+      reason: leave.reason,
+      days: leave.days || ""
     });
     // If using Bootstrap Modal via ID
     const modal = new window.bootstrap.Modal(document.getElementById('editLeaveModal'));
@@ -176,7 +178,8 @@ const handleDeleteLeave = async (leaveId) => {
                   <td>{leave.leaveType}</td>
                   <td>{new Date(leave.startDate).toLocaleDateString()}</td>
                   <td>{new Date(leave.endDate).toLocaleDateString()}</td>
-                  <td>
+                  <td>{leave.days ? `${leave.days} day${leave.days > 1 ? "s" : ""}` : "-"}</td>
+                  {/* <td>
                     {(() => {
                       const start = new Date(leave.startDate);
                       const end = new Date(leave.endDate);
@@ -184,7 +187,7 @@ const handleDeleteLeave = async (leaveId) => {
                       const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1; // +1 to include both start & end days
                       return diffDays > 0 ? `${diffDays} day${diffDays > 1 ? "s" : ""}` : "-";
                     })()}
-                  </td>
+                  </td> */}
                   <td>{leave.reason || "-"}</td>
                   <td>
                     <span
@@ -293,6 +296,17 @@ const handleDeleteLeave = async (leaveId) => {
               className="form-control"
               value={editFormData.endDate}
               onChange={(e) => setEditFormData({...editFormData, endDate: e.target.value})}
+              required
+            />
+          </div>
+          <div className="mb-3">
+            <label className="form-label">Number of Days (Manual)</label>
+            <input 
+              type="number" 
+              className="form-control"
+              placeholder="Enter number of days"
+              value={editFormData.days}
+              onChange={(e) => setEditFormData({...editFormData, days: e.target.value})}
               required
             />
           </div>

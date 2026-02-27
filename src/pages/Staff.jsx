@@ -18,6 +18,7 @@ export default function Staff() {
     startDate: "",
     endDate: "",
     reason: "",
+    days: "",
   });
   const [adding, setAdding] = useState(false);
 
@@ -163,6 +164,7 @@ export default function Staff() {
         startDate: "",
         endDate: "",
         reason: "",
+        days: "",
       });
 
       // ✅ Close modal manually
@@ -434,6 +436,20 @@ const handleUpdateStaff = async () => {
                     onChange={handleChange}
                     required
                   />
+                </div>
+
+                <div className="mb-3">
+                  <label className="form-label fw-semibold">Total Days (Manual)</label>
+                  <input
+                    type="number"
+                    name="days"
+                    className="form-control"
+                    placeholder="e.g. 5"
+                    value={leaveForm.days}
+                    onChange={handleChange}
+                    required
+                  />
+                  <small className="text-muted">You can manually adjust this if needed.</small>
                 </div>
 
                 <div className="mb-3">
