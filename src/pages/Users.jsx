@@ -58,27 +58,21 @@ export default function Users() {
 
   // Fetch users
   const fetchUsers = async () => {
-  try {
-    const data = await getUsers();
-    
-    // ✅ Filter out users who are marked as staff
-    // This assumes your staff users have { staff: "Yes" } 
-    // or { designation: "Staff" }
-    const nonStaffUsers = data.data.filter((user) => {
-      const isStaffField = user.staff?.toLowerCase() === "yes";
-      const isStaffDesignation = user.designation?.toLowerCase() === "staff";
-      
-      // Return true only if they are NOT staff
-      return !isStaffField && !isStaffDesignation;
-    });
+    try {
+      const data = await getUsers();
 
-    setUsers(nonStaffUsers);
-  } catch (err) {
-    console.error("Error fetching users:", err);
-  } finally {
-    setLoading(false);
-  }
-};
+      const filteredUsers = data.data.filter((user) => {
+        const staffValue = user.staff?.trim().toLowerCase();
+        return staffValue !== "yes";
+      });
+
+      setUsers(filteredUsers);
+    } catch (err) {
+      console.error("Error fetching users:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     fetchUsers();
