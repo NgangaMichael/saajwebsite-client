@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { addTransactioncode } from "../services/transactioncode";
+import { updateUser } from "../services/users";
 import money from "../images/money.avif";
 
 export default function Profile() {
@@ -31,10 +32,34 @@ export default function Profile() {
   };
 
   // Save changes
-  const handleSave = () => {
-    setUser(formData);
-    localStorage.setItem("user", JSON.stringify(formData));
-    setShowEditModal(false);
+  const handleSave = async () => {
+    setLoading(true);
+    try {
+      // 1. Call the API to update the database
+      // Note: We send the whole formData which now includes the 'password' field
+      const response = await updateUser(user.id, formData);
+
+      // 2. Prepare data for LocalStorage 
+      // We don't want to store the plain-text password in the browser for security
+      const updatedUserForStorage = { ...formData };
+      delete updatedUserForStorage.password; 
+
+      // 3. Update Local State and Storage
+      setUser(updatedUserForStorage);
+      localStorage.setItem("user", JSON.stringify(updatedUserForStorage));
+
+      setShowEditModal(false);
+      
+      // Clear the password from formData so it's not there if they open the modal again
+      setFormData(prev => ({ ...prev, password: "" }));
+      
+      alert("Profile updated successfully!");
+    } catch (err) {
+      console.error("Failed to update profile:", err);
+      alert("Error updating profile. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   // ✅ Submit transaction code
@@ -297,6 +322,18 @@ export default function Profile() {
                       type="text"
                       name="username"
                       value={formData.username || ""}
+                      onChange={handleChange}
+                      className="form-control"
+                    />
+                  </div>
+
+                  <div className="col-md-6">
+                    <label className="form-label">New Password</label>
+                    <input
+                      type="password"
+                      name="password"
+                      placeholder="Leave blank to keep current"
+                      value={formData.password || ""}
                       onChange={handleChange}
                       className="form-control"
                     />

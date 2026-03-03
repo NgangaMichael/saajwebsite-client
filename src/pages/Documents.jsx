@@ -7,6 +7,7 @@ import {
   updateDocument,
   deleteDocument as apiDeleteDocument,
 } from "../services/documents";
+import { getFolders } from "../services/folder";
 
 import AddDocumentModal from "../components/AddDocumentModal";
 import EditDocumentModal from "../components/EditDocumentModal";
@@ -34,6 +35,7 @@ export default function Documents() {
   // const [filterType, setFilterType] = useState("");
 
   const [filterType, setFilterType] = useState(urlType || "");
+  const [folders, setFolders] = useState([]);
 
   // Get user from localStorage
   const storedUser = JSON.parse(localStorage.getItem("user"));
@@ -56,6 +58,8 @@ export default function Documents() {
     description: "",
   });
 
+  
+
   const fetchCommittees = async () => {
     try {
       const res = await getCommittees();
@@ -64,6 +68,16 @@ export default function Documents() {
       console.error("Error loading committees:", err);
     }
   };
+
+  const fetchFolders = async () => {
+  try {
+    const data = await getFolders();
+    // Assuming your API returns { data: [...] } or just [...]
+    setFolders(data.data || data); 
+  } catch (err) {
+    console.error("Error loading folders:", err);
+  }
+};
 
   const fetchSubcommittees = async (committeeId) => {
     try {
@@ -89,6 +103,7 @@ export default function Documents() {
   useEffect(() => {
     fetchDocs();
     fetchCommittees();
+    fetchFolders();
   }, []);
 
   // Delete
@@ -158,6 +173,9 @@ export default function Documents() {
       documentName: doc.documentName || "",
       uploadedBy: doc.uploadedBy || "",
       description: doc.description || "",
+      type: doc.type || "",     
+      committeeId: doc.committee || "",
+      subcommitteeId: doc.subcommittee || "",
     });
   };
 
@@ -409,8 +427,9 @@ export default function Documents() {
           handleEditChange={handleEditChange}
           saveDocument={saveDocument}
           closeEditModal={() => setEditingDoc(null)}
-          committees={committees}          // ✅ added
-          subcommittees={subcommittees}    // ✅ added
+          committees={committees}
+          subcommittees={subcommittees}
+          folders={folders}
         />
       )}
 

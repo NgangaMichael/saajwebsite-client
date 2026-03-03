@@ -8,8 +8,8 @@ export default function EditDocumentModal({
   closeEditModal,
   committees,
   subcommittees,
+  folders, // 1. Added folders prop
 }) {
-
   return (
     <div className="fixed inset-0 bg-black/40 flex justify-center items-center z-50">
       <div className="bg-white rounded-lg p-6 w-full max-w-lg shadow-lg">
@@ -41,36 +41,58 @@ export default function EditDocumentModal({
             required
           />
 
-          {/* ✅ Committee Dropdown */}
-            <select
-              name="committeeId"
-              value={formData.committeeId}
-              onChange={handleEditChange}
-              className="w-full border rounded p-2 mt-3"
-            >
-              <option value="">-- Select Committee --</option>
-              {committees.map((c) => (
-                <option key={c.id} value={c.name}>
-                  {c.name}
+          {/* 2. Added Folder/Type Dropdown */}
+          <select
+            name="type"
+            value={formData.type}
+            onChange={handleEditChange}
+            className="w-full border rounded p-2 mt-3"
+            required
+          >
+            <option value="">-- Select Folder/Type --</option>
+            {folders && folders.length > 0 ? (
+              folders.map((f) => (
+                <option key={f.id} value={f.foldername}>
+                  {f.foldername}
                 </option>
-              ))}
-            </select>
+              ))
+            ) : (
+              <option disabled>No folders found</option>
+            )}
+          </select>
 
-            {/* ✅ Subcommittee Dropdown */}
-            <select
-              name="subcommitteeId"
-              value={formData.subcommitteeId}
-              onChange={handleEditChange}
-              className="w-full border rounded p-2 mt-3"
-              disabled={!formData.committeeId}
-            >
-              <option value="">-- Select Subcommittee --</option>
-              {subcommittees.map((s) => (
-                <option key={s.id} value={s.name}>
-                  {s.name}
-                </option>
-              ))}
-            </select>
+          {/* Committee Dropdown */}
+          <select
+            name="committeeId"
+            value={formData.committeeId}
+            onChange={handleEditChange}
+            className="w-full border rounded p-2 mt-3"
+          >
+            <option value="">-- Select Sub-Committee --</option>
+            <option value="All">All Sub-Committees</option>
+            {committees.map((c) => (
+              <option key={c.id} value={c.name}>
+                {c.name}
+              </option>
+            ))}
+          </select>
+
+          {/* Subcommittee Dropdown */}
+          <select
+            name="subcommitteeId"
+            value={formData.subcommitteeId}
+            onChange={handleEditChange}
+            className="w-full border rounded p-2 mt-3"
+            disabled={!formData.committeeId}
+          >
+            <option value="">-- Select Departments --</option>
+            <option value="All">All Departments</option>
+            {subcommittees.map((s) => (
+              <option key={s.id} value={s.name}>
+                {s.name}
+              </option>
+            ))}
+          </select>
 
           <textarea
             name="description"
