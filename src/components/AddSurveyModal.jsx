@@ -1,15 +1,26 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { X, Plus, Trash2 } from "lucide-react";
-import { createSurvey } from "../services/survery";
+import { createSurvey, updateSurvey } from "../services/survery";
+import { toast } from "react-toastify";
 
-export default function AddSurveyModal({ closeModal, refresh }) {
+export default function AddSurveyModal({ closeModal, refresh, editData }) {
+  
   const storedUser = JSON.parse(localStorage.getItem("user"));
+
+  useEffect(() => {
+    if (editData) {
+      setTitle(editData.title || "");
+      setDescription(editData.description || "");
+      setQuestions(editData.questions || []); 
+    }
+  }, [editData]);
 
   if (storedUser?.level !== "Level 3") return null;
 
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [questions, setQuestions] = useState([]);
+  const isEditing = !!editData;
+  const [title, setTitle] = useState(editData?.title || "");
+  const [description, setDescription] = useState(editData?.description || "");
+  const [questions, setQuestions] = useState(editData?.questions || []);
 
   const addQuestion = () => {
     setQuestions([
@@ -57,17 +68,21 @@ export default function AddSurveyModal({ closeModal, refresh }) {
     }
 
     try {
-      await createSurvey({
-        title,
-        description,
-        questions
-      });
+      const payload = { title, description, questions };
+      
+      if (isEditing) {
+        await updateSurvey(editData.id, payload);
+        toast.success("Survey updated!");
+      } else {
+        await createSurvey(payload);
+        toast.success("Survey created!");
+      }
 
       refresh();
       closeModal();
     } catch (err) {
-      console.error("Error creating survey:", err);
-      alert("Failed to create survey");
+      console.error(err);
+      alert("Action failed");
     }
   };
 
@@ -78,7 +93,7 @@ export default function AddSurveyModal({ closeModal, refresh }) {
 
           {/* Header */}
           <div className="modal-header">
-            <h5>Create Survey</h5>
+            <h5>{isEditing ? "Edit Survey" : "Create Survey"}</h5>
             <button className="btn-close" onClick={closeModal}></button>
           </div>
 
@@ -183,9 +198,11 @@ export default function AddSurveyModal({ closeModal, refresh }) {
             <button className="btn btn-secondary" onClick={closeModal}>
               Cancel
             </button>
-            <button className="btn btn-success" onClick={submitSurvey}>
-              Save Survey
-            </button>
+            <div className="modal-footer">
+             <button className="btn btn-success" onClick={submitSurvey}>
+               {isEditing ? "Update Survey" : "Save Survey"}
+             </button>
+          </div>
           </div>
 
         </div>

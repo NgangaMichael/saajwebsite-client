@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { Plus, Eye, CheckCircle } from "lucide-react";
+import { Plus, Eye, CheckCircle, Pencil, Trash2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { getSurveys } from "../services/survery";
+import { getSurveys, deleteSurvey } from "../services/survery";
 import AddSurveyModal from "../components/AddSurveyModal";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -11,6 +11,7 @@ export default function Survey() {
   const [loading, setLoading] = useState(true);
   const [adding, setAdding] = useState(false);
   const pendingCount = surveys.filter(s => !s.alreadySubmitted).length;
+  const [editingSurvey, setEditingSurvey] = useState(null);
 
   const navigate = useNavigate();
   const storedUser = JSON.parse(localStorage.getItem("user"));
@@ -35,12 +36,31 @@ export default function Survey() {
     return <p className="text-center text-muted">Loading surveys...</p>;
   }
 
+  const handleDelete = async (id) => {
+  if (!window.confirm("Are you sure you want to delete this survey?")) return;
+    try {
+      await deleteSurvey(id);
+      toast.success("Survey deleted successfully");
+      fetchSurveys(); // Refresh list
+    } catch (err) {
+      toast.error("Failed to delete survey");
+    }
+  };
+
+  const handleEdit = (survey) => {
+    setEditingSurvey(survey);
+    setAdding(true); 
+  };
+
+  const handleCloseModal = () => {
+    setAdding(false);
+    setEditingSurvey(null); // Reset so the next "Create" is empty
+  };
+
   return (
     <div>
       {/* Header */}
       <div className="d-flex justify-content-between align-items-center mb-3">
-        <h5>Surveys</h5>
-
         <h5>
           Surveys 
           {pendingCount > 0 && (
@@ -72,6 +92,7 @@ export default function Survey() {
             <th>Description</th>
             <th>Status</th>
             <th>Action</th>
+            <th></th>
           </tr>
         </thead>
         <tbody>
@@ -110,26 +131,20 @@ export default function Survey() {
                     </button>
                   )}
             
-                   {/* Admin Analytics Button */}
-                  {isLevel3 && (
-                    <button
-                      className="btn btn-info btn-sm mx-2"
-                      onClick={() => navigate(`analytics/${survey.id}`)}
-                    >
-                      View Analytics
-                    </button>
-                  )}
                 </td>
-                {/* <td>
-                  {!isLevel3 && (
-                    <button
-                      className="btn btn-success btn-sm"
-                      onClick={() => navigate(`/survey/respond/${survey.id}`)}
-                    >
-                      Respond
+                {isLevel3 && (
+                  <>
+                    <button className="btn btn-info btn-sm" onClick={() => navigate(`analytics/${survey.id}`)}>
+                      Analytics
                     </button>
-                  )}
-                </td> */}
+                    <button className="btn btn-primary btn-sm mx-2" onClick={() => handleEdit(survey)}>
+                      <Pencil size={14} />
+                    </button>
+                    <button className="btn btn-danger btn-sm" onClick={() => handleDelete(survey.id)}>
+                      <Trash2 size={14} />
+                    </button>
+                  </>
+                )}
               </tr>
             ))
           )}
@@ -141,6 +156,7 @@ export default function Survey() {
         <AddSurveyModal
           closeModal={() => setAdding(false)}
           refresh={fetchSurveys}
+          editData={editingSurvey}
         />
       )}
 

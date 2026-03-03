@@ -6,11 +6,13 @@ import EditUserModal from "../components/EditUserModal";
 import { getUsers, addUser as apiAddUser, updateUser, deleteUser as apiDeleteUser } from "../services/users";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import xlsx from "json-as-xlsx";
 
 export default function Users() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+  const [exportType, setExportType] = useState("Active");
 
   // Edit state
   const [editingUser, setEditingUser] = useState(null);
@@ -306,6 +308,42 @@ const handleDateSelection = async (user, event) => {
     setFilters(prev => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
+  const handleExport = () => {
+  // Filter users based on selected exportType
+  const usersToExport = users.filter(u => u.subscription === exportType);
+
+  if (usersToExport.length === 0) {
+    toast.warn(`No users found with ${exportType} subscription.`);
+    return;
+  }
+
+  let data = [
+    {
+      sheet: "Subscribers",
+      columns: [
+        { label: "Username", value: "username" },
+        { label: "Email", value: "email" },
+        { label: "Phone", value: "phone" },
+        { label: "Member NO", value: "fileNumber" },
+        { label: "Committee", value: "committee" },
+        { label: "Designation", value: "designation" },
+        { label: "Status", value: "subscription" },
+        { label: "Sub Date", value: "subdate" },
+      ],
+      content: usersToExport,
+    },
+  ];
+
+  let settings = {
+    fileName: `${exportType}_Subscribers_${new Date().toISOString().split('T')[0]}`,
+    extraLength: 3, 
+    writeOptions: {}, 
+  };
+
+  xlsx(data, settings);
+  toast.success(`Exported ${usersToExport.length} ${exportType} members`);
+};
+
   return (
     <div className="">
       {/* Header */}
@@ -313,9 +351,26 @@ const handleDateSelection = async (user, event) => {
       <div className="mb-4">
         <div className="d-flex justify-content-between align-items-center mb-3">
           <h2 className="h5 mb-0">Users Management</h2>
-          <button className="btn btn-primary btn-sm" onClick={() => setAdding(true)}>
-            <Plus size={16} className="me-1" /> Add User
-          </button>
+          <div className="d-flex gap-2">
+            {/* Export Section */}
+            <div className="input-group input-group-sm">
+              <select 
+                className="form-select" 
+                value={exportType} 
+                onChange={(e) => setExportType(e.target.value)}
+              >
+                <option value="Active">Active</option>
+                <option value="Inactive">Inactive</option>
+              </select>
+              <button className="btn btn-outline-success" onClick={handleExport}>
+                Export Excel
+              </button>
+            </div>
+
+            <button className="btn btn-primary btn-sm" onClick={() => setAdding(true)}>
+              <Plus size={16} className="me-1" /> Add User
+            </button>
+          </div>
         </div>
 
         <div className="row g-2 bg-light p-3 rounded border">

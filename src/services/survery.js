@@ -29,3 +29,22 @@ export const submitSurveyResponse = async (payload) => {
   const res = await api.post("/survey/respond", payload);
   return res.data;
 };
+
+/**
+ * Update an existing survey (Admin)
+ * @param {string|number} id - The Survey ID
+ * @param {object} payload - The updated title, description, and questions
+ */
+export const updateSurvey = async (id, payload) => {
+  const res = await api.put(`/survey/${id}`, payload);
+  return res.data;
+};
+
+/**
+ * Delete a survey (Admin)
+ * @param {string|number} id - The Survey ID
+ */
+export const deleteSurvey = async (id) => {
+  const res = await api.delete(`/survey/${id}`);
+  return res.data;
+};
