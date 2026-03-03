@@ -96,59 +96,76 @@ export default function Survey() {
           </tr>
         </thead>
         <tbody>
-          {surveys.length === 0 ? (
-            <tr>
-              <td colSpan="5" className="text-center text-muted">
-                No surveys available
-              </td>
-            </tr>
+  {surveys.length === 0 ? (
+    <tr>
+      <td colSpan="6" className="text-center text-muted">
+        No surveys available
+      </td>
+    </tr>
+  ) : (
+    surveys.map((survey, idx) => (
+      <tr key={survey.id}>
+        <td>{idx + 1}</td>
+        <td>{survey.title}</td>
+        <td>{survey.description || "-"}</td>
+        <td>
+          {survey.alreadySubmitted ? (
+            <span className="text-success fw-bold">
+              <CheckCircle size={16} /> Submitted
+            </span>
           ) : (
-            surveys.map((survey, idx) => (
-              <tr key={survey.id}>
-                <td>{idx + 1}</td>
-                <td>{survey.title}</td>
-                <td>{survey.description || "-"}</td>
-                <td>
-                  {survey.alreadySubmitted ? (
-                    <span className="text-success">
-                      <CheckCircle size={16} /> Submitted
-                    </span>
-                  ) : (
-                    <span className="text-warning">Pending</span>
-                  )}
-                </td>
-                <td>
-                   {survey.alreadySubmitted ? (
-                    <span className="text-success">
-                      <CheckCircle size={16} /> Submitted
-                    </span>
-                  ) : (
-                    <button
-                      className="btn btn-success btn-sm"
-                      onClick={() => navigate(`respond/${survey.id}`)}
-                    >
-                      Respond
-                    </button>
-                  )}
-            
-                </td>
-                {isLevel3 && (
-                  <>
-                    <button className="btn btn-info btn-sm" onClick={() => navigate(`analytics/${survey.id}`)}>
-                      Analytics
-                    </button>
-                    <button className="btn btn-primary btn-sm mx-2" onClick={() => handleEdit(survey)}>
-                      <Pencil size={14} />
-                    </button>
-                    <button className="btn btn-danger btn-sm" onClick={() => handleDelete(survey.id)}>
-                      <Trash2 size={14} />
-                    </button>
-                  </>
-                )}
-              </tr>
-            ))
+            <span className="text-warning fw-bold">Pending</span>
           )}
-        </tbody>
+        </td>
+        
+        {/* ACTION COLUMN: Respond button for users */}
+        <td>
+          {!survey.alreadySubmitted ? (
+            <button
+              className="btn btn-success btn-sm"
+              onClick={() => navigate(`respond/${survey.id}`)}
+            >
+              Respond
+            </button>
+          ) : (
+            <button className="btn btn-outline-secondary btn-sm" disabled>
+              Completed
+            </button>
+          )}
+        </td>
+
+        {/* ADMIN COLUMN: Analytics, Edit, Delete */}
+        <td>
+          {isLevel3 && (
+            <div className="d-flex gap-2">
+              <button 
+                className="btn btn-info btn-sm text-white" 
+                onClick={() => navigate(`analytics/${survey.id}`)}
+                title="Analytics"
+              >
+                <Eye size={14} />
+              </button>
+              <button 
+                className="btn btn-primary btn-sm" 
+                onClick={() => handleEdit(survey)}
+                title="Edit"
+              >
+                <Pencil size={14} />
+              </button>
+              <button 
+                className="btn btn-danger btn-sm" 
+                onClick={() => handleDelete(survey.id)}
+                title="Delete"
+              >
+                <Trash2 size={14} />
+              </button>
+            </div>
+          )}
+        </td>
+      </tr>
+    ))
+  )}
+</tbody>
       </table>
 
       {/* Add Survey Modal */}
