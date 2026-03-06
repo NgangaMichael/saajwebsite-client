@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { getUsers } from "../services/users";
 import { getCommittees } from "../services/committees";
 
-export default function AddCommunicationModal({ newComm, handleAddChange, addComm, closeAddModal }) {
+export default function AddCommunicationModal({ newComm, handleAddChange, addComm, closeAddModal, userLevel }) {
   const [users, setUsers] = useState([]);
   const [committees, setCommittees] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -51,15 +51,82 @@ export default function AddCommunicationModal({ newComm, handleAddChange, addCom
   return (
     <div className="fixed inset-0 bg-black/40 flex justify-center items-center z-50">
       <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-lg">
-        <h5 className="text-xl font-semibold mb-4"><u>Add Communication</u></h5>
+        <h5 className="text-xl font-semibold mb-4">
+          <u>{newComm.replyMode ? "Reply to Message" : "Add Communication"}</u>
+        </h5>
 
         <div className="space-y-3">
+          {/* RECIPIENT DISPLAY (Reply Mode vs New Mode) */}
+          {newComm.replyMode ? (
+            <div className="bg-gray-100 p-2 rounded border border-gray-300">
+              <label className="text-xs font-bold text-gray-500 uppercase">Replying To:</label>
+              <div className="text-sm font-semibold">{newComm.sendto}</div>
+            </div>
+          ) : (
+            <>
+              {/* Show Search and Dropdown ONLY if not replying */}
+              <input
+                list="recipient-options"
+                type="text"
+                placeholder="Search user or Sub-committee..."
+                className="w-full border p-2 rounded mt-2"
+                onChange={(e) => {
+                  setSearchTerm(e.target.value);
+                  const match = [...users, ...committees].find(
+                    item => (item.username || item.name) === e.target.value
+                  );
+                  if (match) {
+                    handleAddChange({ target: { name: "sendtoid", value: match.id } });
+                    handleAddChange({ target: { name: "sendto", value: e.target.value } });
+                  }
+                }}
+              />
+              <datalist id="recipient-options">
+                <option value="All" />
+                {filteredUsers.map(user => (
+                  <option key={user.id} value={user.username || user.name} />
+                ))}
+                {filteredCommittees.map(c => (
+                  <option key={c.id} value={c.name} />
+                ))}
+              </datalist>
+
+              <select
+                name="sendto"
+                value={newComm.sendtoid}
+                onChange={handleSelectChange}
+                className="w-full border p-2 rounded mt-2"
+                required
+              >
+                <option value="">-- Select recipient --</option>
+                {userLevel !== "Level 1" && <option value="0" data-name="All">All</option>}
+                {userLevel !== "Level 1" && (
+                  <optgroup label="Users">
+                    {filteredUsers.map(user => (
+                      <option key={user.id} value={user.id} data-name={user.username || user.name}>
+                        {user.username || user.name}
+                      </option>
+                    ))}
+                  </optgroup>
+                )}
+                <optgroup label="Committees">
+                  {filteredCommittees.map(committee => (
+                    <option key={committee.id} value={committee.id} data-name={committee.name}>
+                      {committee.name}
+                    </option>
+                  ))}
+                </optgroup>
+              </select>
+            </>
+          )}
+
+          {/* TITLE & INFO (Always visible) */}
           <input
             name="title"
             value={newComm.title}
             onChange={handleAddChange}
             placeholder="Title"
-            className="w-full border p-2 rounded"
+            className="w-full border p-2 rounded mt-2"
             required
           />
 
@@ -67,72 +134,18 @@ export default function AddCommunicationModal({ newComm, handleAddChange, addCom
             name="info"
             value={newComm.info}
             onChange={handleAddChange}
-            placeholder="Info"
-            className="w-full border p-2 rounded mt-2"
+            placeholder="Write your message here..."
+            className="w-full border p-2 rounded mt-2 h-32"
             required
           />
-
-          {/* Search box */}
-          <input
-            type="text"
-            placeholder="Search user or committee..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full border p-2 rounded mt-2"
-          />
-
-          {/* Dropdown */}
-          <select
-  name="sendto"
-  value={newComm.sendtoid} // optional, you can still use sendto
-  onChange={handleSelectChange}
-  className="w-full border p-2 rounded mt-2"
-  required
->
-  <option value="">-- Select recipient --</option>
-  <option value="0" data-name="All" data-type="all">All</option>
-
-  <optgroup label="Users">
-    {filteredUsers.map(user => (
-      <option
-        key={user.id}
-        value={user.id}
-        data-name={user.username || user.name}
-        data-type="user"
-      >
-        {user.username || user.name}
-      </option>
-    ))}
-  </optgroup>
-
-  <optgroup label="Committees">
-    {filteredCommittees.map(committee => (
-      <option
-        key={committee.id}
-        value={committee.id}
-        data-name={committee.name}
-        data-type="committee"
-      >
-        {committee.name}
-      </option>
-    ))}
-  </optgroup>
-</select>
-
         </div>
 
         <div className="flex justify-end gap-3 mt-4">
-          <button
-            onClick={closeAddModal}
-            className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
-          >
+          <button onClick={closeAddModal} className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600">
             Cancel
           </button>
-          <button
-            onClick={addComm}
-            className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
-          >
-            Save
+          <button onClick={addComm} className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">
+            {newComm.replyMode ? "Send Reply" : "Save"}
           </button>
         </div>
       </div>

@@ -19,6 +19,12 @@ export const addCommunication = async (data) => {
   return res.data;
 };
 
+// Add this to your service file
+export const getCommunicationThread = async (id) => {
+  const res = await api.get(`/communications/thread/${id}`);
+  return res.data;
+};
+
 // Update communication
 export const updateCommunication = async (id, data) => {
   const res = await api.patch(`/communications/${id}`, data);

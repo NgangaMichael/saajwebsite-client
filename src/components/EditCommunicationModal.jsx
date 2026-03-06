@@ -7,6 +7,7 @@ export default function EditCommunicationModal({
   handleEditChange,
   saveComm,
   closeEditModal,
+  userLevel
 }) {
   const [users, setUsers] = useState([]);
   const [committees, setCommittees] = useState([]);
@@ -96,43 +97,35 @@ export default function EditCommunicationModal({
 
           {/* Dropdown */}
           <select
-            name="sendto"
-            value={formData.sendtoid || ""} // use sendtoid for selection
-            onChange={handleSelectChange}
-            className="w-full border p-2 rounded mt-2"
-            required
-          >
-            <option value="">-- Select recipient --</option>
-            <option value="0" data-name="All" data-type="all">
-              All
-            </option>
+  name="sendto"
+  value={formData.sendtoid || ""}
+  onChange={handleSelectChange}
+  className="w-full border p-2 rounded mt-2"
+  required
+>
+  <option value="">-- Select recipient --</option>
 
-            <optgroup label="Users">
-              {filteredUsers.map((user) => (
-                <option
-                  key={user.id}
-                  value={user.id}
-                  data-name={user.username || user.name}
-                  data-type="user"
-                >
-                  {user.username || user.name}
-                </option>
-              ))}
-            </optgroup>
+  {userLevel !== "Level 1" && (
+    <>
+      <option value="0" data-name="All">All</option>
+      <optgroup label="Users">
+        {filteredUsers.map((user) => (
+          <option key={user.id} value={user.id} data-name={user.username || user.name}>
+            {user.username || user.name}
+          </option>
+        ))}
+      </optgroup>
+    </>
+  )}
 
-            <optgroup label="Committees">
-              {filteredCommittees.map((committee) => (
-                <option
-                  key={committee.id}
-                  value={committee.id}
-                  data-name={committee.name}
-                  data-type="committee"
-                >
-                  {committee.name}
-                </option>
-              ))}
-            </optgroup>
-          </select>
+  <optgroup label="Committees">
+    {filteredCommittees.map((committee) => (
+      <option key={committee.id} value={committee.id} data-name={committee.name}>
+        {committee.name}
+      </option>
+    ))}
+  </optgroup>
+</select>
         </div>
 
         {/* Buttons */}
