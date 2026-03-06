@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { Link, Outlet, useLocation } from "react-router-dom";
 import { getSurveys } from "../services/survery";
-import { getCommunications } from "../services/communication"; // ✅ Import this
+import { getCommunications } from "../services/communication";
+import { getServices } from "../services/service";
 import {
   Users, Puzzle, FileText, Layers, ChevronLeft, ChevronRight,
   LogOut, MessageSquare, Activity, Settings, Users2, List, Server
@@ -11,7 +12,8 @@ export default function Dashboard() {
   const [collapsed, setCollapsed] = useState(false);
   const location = useLocation();
   const [pendingSurveys, setPendingSurveys] = useState(0);
-  const [pendingMessages, setPendingMessages] = useState(0); // ✅ New State
+  const [pendingMessages, setPendingMessages] = useState(0);
+  const [pendingServices, setPendingServices] = useState(0);
 
   const storedUser = JSON.parse(localStorage.getItem("user"));
   const userLevel = storedUser?.level;
@@ -54,29 +56,36 @@ export default function Dashboard() {
     try {
       if (!storedUser?.id) return;
 
-      // 1. Fetch Surveys
-      const surveyRes = await getSurveys(storedUser.id);
+      // 1. Fetch Surveys & Messages (Your existing logic)
+      const [surveyRes, commsRes, serviceRes] = await Promise.all([
+        getSurveys(storedUser.id),
+        getCommunications(),
+        getServices() // ✅ 2. Fetch Services
+      ]);
+
+      // --- Survey Logic ---
       setPendingSurveys(surveyRes.data.filter(s => !s.alreadySubmitted).length);
 
-      // 2. Fetch Communications
-      const commsRes = await getCommunications();
+      // --- Message Logic ---
       const allMessages = commsRes.data || [];
       const readIds = JSON.parse(localStorage.getItem(`read_msgs_${storedUser.id}`)) || [];
-
       const unreadCount = allMessages.filter((comm) => {
-        const isVisible = 
-          storedUser.level === "Level 3" ||
-          comm.sendto === "All" || 
-          comm.sendtoid === "0" ||
-          comm.sendtoid == storedUser.id || 
-          comm.sendto === storedUser.username ||
-          comm.sendto === storedUser.committee;
-
-        const isUnread = !readIds.includes(comm.id) && comm.sender !== storedUser.username;
-        return isVisible && isUnread;
+        const isVisible = storedUser.level === "Level 3" || comm.sendto === "All" || comm.sendtoid == storedUser.id || comm.sendto === storedUser.committee;
+        return isVisible && !readIds.includes(comm.id) && comm.sender !== storedUser.username;
       }).length;
-
       setPendingMessages(unreadCount);
+
+      // --- Service Logic ✅ ---
+      const allServices = serviceRes.data || [];
+      const lastSeenServiceCount = parseInt(localStorage.getItem(`seen_services_count_${storedUser.id}`)) || 0;
+      
+      // If there are more services in DB than the user last saw, show the difference
+      if (allServices.length > lastSeenServiceCount) {
+        setPendingServices(allServices.length - lastSeenServiceCount);
+      } else {
+        setPendingServices(0);
+      }
+
     } catch (err) {
       console.error("Failed to fetch notification counts", err);
     }
@@ -119,6 +128,11 @@ export default function Dashboard() {
                         {item.to === "communication" && pendingMessages > 0 && (
                         <span className="bg-blue-600 text-white text-[10px] px-2 py-0.5 rounded-full">{pendingMessages}</span>
                         )}
+
+                        {/* Service Badge ✅ */}
+                        {item.to === "service" && pendingServices > 0 && (
+                          <span className="bg-cyan-500 text-white text-[10px] px-2 py-0.5 rounded-full">{pendingServices}</span>
+                        )}
                     </div>
                   </div>
                 )}
@@ -132,6 +146,10 @@ export default function Dashboard() {
                         {item.to === "communication" && pendingMessages > 0 && (
                             <div className="absolute top-2 right-2 w-2 h-2 bg-blue-600 rounded-full border border-gray-800"></div>
                         )}
+                        {/* Service Dot ✅ */}
+                        {item.to === "service" && pendingServices > 0 && (
+                            <div className="absolute top-2 right-2 w-2 h-2 bg-cyan-500 rounded-full border border-gray-800"></div>
+                        )}
                     </>
                 )}
               </Link>
@@ -139,7 +157,16 @@ export default function Dashboard() {
           })}
         </nav>
 
-        <button onClick={() => { localStorage.clear(); window.location.href = "/login"; }} className="p-2 m-2 bg-red-700 rounded hover:bg-red-600 flex items-center justify-center">
+        <button 
+          onClick={() => { 
+            // Instead of clear(), we remove specific auth keys
+            localStorage.removeItem("user"); 
+            localStorage.removeItem("token"); // if you have one
+            
+            // This keeps keys like `read_msgs_123` and `seen_services_count_123` intact
+            window.location.href = "/login"; 
+          }}
+          className="p-2 m-2 bg-red-700 rounded hover:bg-red-600 flex items-center justify-center">
           <LogOut size={20} />
         </button>
 

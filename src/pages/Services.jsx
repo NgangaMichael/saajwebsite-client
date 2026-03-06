@@ -33,7 +33,15 @@ export default function Services() {
   const fetchServices = async () => {
     try {
       const data = await getServices();
-      setServices(data.data);
+      const servicesList = data.data;
+      setServices(servicesList);
+
+      // ✅ Mark all services as seen
+      if (storedUser?.id) {
+        localStorage.setItem(`seen_services_count_${storedUser.id}`, servicesList.length);
+        // Trigger storage event so the Sidebar updates immediately
+        window.dispatchEvent(new Event("storage"));
+      }
     } catch (err) {
       console.error("Error fetching services:", err);
     } finally {

@@ -33,34 +33,41 @@ export default function Profile() {
 
   // Save changes
   const handleSave = async () => {
-    setLoading(true);
-    try {
-      // 1. Call the API to update the database
-      // Note: We send the whole formData which now includes the 'password' field
-      const response = await updateUser(user.id, formData);
+  setLoading(true);
+  try {
+    // Only send fields that exist in formData (what user typed)
+    const payload = Object.fromEntries(
+      Object.entries(formData).filter(([_, v]) => v !== undefined)
+    );
 
-      // 2. Prepare data for LocalStorage 
-      // We don't want to store the plain-text password in the browser for security
-      const updatedUserForStorage = { ...formData };
-      delete updatedUserForStorage.password; 
+    const response = await updateUser(user.id, payload);
+    console.log("Payload being sent:", payload);
+    const updatedUserFromServer = response.data;
 
-      // 3. Update Local State and Storage
-      setUser(updatedUserForStorage);
-      localStorage.setItem("user", JSON.stringify(updatedUserForStorage));
+    if (updatedUserFromServer) {
+      const storageUser = { ...updatedUserFromServer };
+      delete storageUser.password;
+
+      // Merge with existing localStorage user to preserve fields not returned
+      const existingUser = JSON.parse(localStorage.getItem("user") || "{}");
+      const mergedUser = { ...existingUser, ...storageUser };
+
+      setUser(mergedUser);
+      localStorage.setItem("user", JSON.stringify(mergedUser));
 
       setShowEditModal(false);
-      
-      // Clear the password from formData so it's not there if they open the modal again
-      setFormData(prev => ({ ...prev, password: "" }));
-      
-      alert("Profile updated successfully!");
-    } catch (err) {
-      console.error("Failed to update profile:", err);
-      alert("Error updating profile. Please try again.");
-    } finally {
-      setLoading(false);
+      setFormData(mergedUser);
+      alert("✅ Profile updated successfully!");
+    } else {
+      throw new Error("No data returned from server");
     }
-  };
+  } catch (err) {
+    console.error("Update failed:", err);
+    alert("❌ Error: Could not save changes to the database.");
+  } finally {
+    setLoading(false);
+  }
+};
 
   // ✅ Submit transaction code
   const handleTransactionSubmit = async (e) => {
@@ -351,11 +358,56 @@ export default function Profile() {
                   </div>
 
                   <div className="col-md-6">
+                    <label className="form-label">Phone Number</label>
+                    <input
+                      type="text"
+                      name="phone"
+                      placeholder="e.g. 0712345678"
+                      value={formData.phone || ""}
+                      onChange={handleChange}
+                      className="form-control"
+                    />
+                  </div>
+
+                  <div className="col-md-6">
                     <label className="form-label">Age</label>
                     <input
                       type="number"
                       name="age"
                       value={formData.age || ""}
+                      onChange={handleChange}
+                      className="form-control"
+                    />
+                  </div>
+
+                  <div className="col-md-6">
+                    <label className="form-label">Date of Birth</label>
+                    <input
+                      type="date"
+                      name="dob"
+                      value={formData.dob ? formData.dob.split('T')[0] : ""} // Handles ISO date strings
+                      onChange={handleChange}
+                      className="form-control"
+                    />
+                  </div>
+
+                  <div className="col-md-6">
+                    <label className="form-label">ID or Passport Number</label>
+                    <input
+                      type="text"
+                      name="idpassport"
+                      value={formData.idpassport || ""}
+                      onChange={handleChange}
+                      className="form-control"
+                    />
+                  </div>
+
+                  <div className="col-md-6">
+                    <label className="form-label">Nationality</label>
+                    <input
+                      type="text"
+                      name="nationality"
+                      value={formData.nationality || ""}
                       onChange={handleChange}
                       className="form-control"
                     />
@@ -389,6 +441,33 @@ export default function Profile() {
                       <option value="Divorced">Divorced</option>
                       <option value="Widowed">Widowed</option>
                     </select>
+                  </div>
+
+                  <div className="col-md-6">
+                    <label className="form-label">Employment Status</label>
+                    <select
+                      name="employmentstatus"
+                      value={formData.employmentstatus || ""}
+                      onChange={handleChange}
+                      className="form-select"
+                    >
+                      <option value="">Select status</option>
+                      <option value="Employed">Employed</option>
+                      <option value="Unemployed">Unemployed</option>
+                      <option value="Self-Employed">Self-Employed</option>
+                    </select>
+                  </div>
+
+                  <div className="col-md-6">
+                    <label className="form-label">Occupation</label>
+                    <input
+                      type="text"
+                      name="occupation"
+                      placeholder="e.g. Accountant"
+                      value={formData.occupation || ""}
+                      onChange={handleChange}
+                      className="form-control"
+                    />
                   </div>
                 </div>
               </div>

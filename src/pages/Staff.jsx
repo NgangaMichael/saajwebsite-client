@@ -64,25 +64,23 @@ export default function Staff() {
 
   // ✅ Fetch staff users
   const fetchUsers = async () => {
-    try {
-      const data = await getUsers();
-      const staffUsers = data.data.filter((user) => user.designation === "Staff");
+  try {
+    const data = await getUsers();
+    const staffUsers = data.data.filter((user) => user.designation === "Staff");
 
-      // ✅ Filter based on logged-in user's designation
-      if (loggedInUser?.designation === "Staff") {
-        // Show only the logged-in staff
-        const self = staffUsers.filter((u) => u.id === loggedInUser.id);
-        setUsers(self);
-      } else {
-        // Admin or higher-level users see all staff
-        setUsers(staffUsers);
-      }
-    } catch (err) {
-      console.error("Error fetching users:", err);
-    } finally {
-      setLoading(false);
+    // ✅ Logic Update: Level 3 Staff can see everyone, lower levels see only self
+    if (loggedInUser?.designation === "Staff" && loggedInUser?.level !== "Level 3") {
+      const self = staffUsers.filter((u) => u.id === loggedInUser.id);
+      setUsers(self);
+    } else {
+      setUsers(staffUsers);
     }
-  };
+  } catch (err) {
+    console.error("Error fetching users:", err);
+  } finally {
+    setLoading(false);
+  }
+};
 
   useEffect(() => {
     fetchUsers();
@@ -238,7 +236,7 @@ const handleUpdateStaff = async () => {
     <div>
       {/* Header */}
       <div>
-        {loggedInUser?.designation !== "Staff" && (
+          {(loggedInUser?.designation !== "Staff" || loggedInUser?.level === "Level 3") && (
           <div> 
             <input
               className="form-control float-end w-25 form-control-sm mx-2"
