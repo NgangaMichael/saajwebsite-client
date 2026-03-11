@@ -113,12 +113,17 @@ export default function Profile() {
       <div className="container">
         {/* Header */}
         <div>
-          <button
+          {user.staff?.trim().toLowerCase() !== "yes" && (
+          <button className="btn btn-primary btn-sm float-end" onClick={() => setShowMoneyModal(true)}>
+            Pay Lawajam
+          </button>
+)}
+          {/* <button
             className="btn btn-primary btn-sm float-end"
             onClick={() => setShowMoneyModal(true)}
           >
             Pay Lawajam
-          </button>
+          </button> */}
           <h2 className="h5">My Profile</h2>
         </div>
 
@@ -155,69 +160,61 @@ export default function Profile() {
                   { label: "Gender", key: "gender" },
                   { label: "Marital Status", key: "maritalStatus" },
                   { label: "Name", key: "username" },
-                  { label: "Comittee", key: "committee" },
-                  { label: "Sub-Committee", key: "subCommittee" },
-                ].map((item) => (
-                  <div className="row mb-2" key={item.key}>
-                    <div className="col-sm-4 fw-semibold text-secondary">
-                      {item.label}:
+                    // Conditional Fields for non-staff only
+                    ...(user.staff?.trim().toLowerCase() !== "yes" ? [
+                      { label: "Committee", key: "committee" },
+                      { label: "Sub-Committee", key: "subCommittee" },
+                    ] : []),
+                  ].map((item) => (
+                    <div className="row mb-2" key={item.key}>
+                      <div className="col-sm-4 fw-semibold text-secondary">
+                        {item.label}:
+                      </div>
+                      <div className="col-sm-8">{user[item.key] || "-"}</div>
                     </div>
-                    <div className="col-sm-8">{user[item.key]}</div>
-                  </div>
-                ))}
+                  ))}
 
-                <div className="row mb-2">
-                  <div className="col-sm-4 fw-semibold text-secondary">
-                    Subscription:
-                  </div>
-                  <div className="col-sm-8">
-                    <span
-                      className={`badge ${
-                        user.subscription === "Active"
-                          ? "bg-success"
-                          : "bg-danger"
-                      }`}
-                    >
-                      {user.subscription}
-                    </span>
-                  </div>
-                </div>
+                {/* Only show Subscription and Approval Status if NOT staff */}
+                  {user.staff?.trim().toLowerCase() !== "yes" && (
+                    <>
+                      <div className="row mb-2">
+                        <div className="col-sm-4 fw-semibold text-secondary">
+                          Subscription:
+                        </div>
+                        <div className="col-sm-8">
+                          <span className={`badge ${user.subscription === "Active" ? "bg-success" : "bg-danger"}`}>
+                            {user.subscription}
+                          </span>
+                        </div>
+                      </div>
 
-                <div className="row mb-2">
-                  <div className="col-sm-4 fw-semibold text-secondary">
-                    Subscription renewal Date:
-                  </div>
-                  <div className="col-sm-8">
-                    <p className="text-primary fw-bold">
-                      {new Date(
-                        new Date().getFullYear() + 1,
-                        0,
-                        1
-                      ).toLocaleDateString("en-GB", {
-                        day: "2-digit",
-                        month: "short",
-                        year: "numeric",
-                      })}
-                    </p>
-                  </div>
-                </div>
+                      <div className="row mb-2">
+                        <div className="col-sm-4 fw-semibold text-secondary">
+                          Subscription renewal Date:
+                        </div>
+                        <div className="col-sm-8">
+                          <p className="text-primary fw-bold">
+                            {new Date(new Date().getFullYear() + 1, 0, 1).toLocaleDateString("en-GB", {
+                              day: "2-digit",
+                              month: "short",
+                              year: "numeric",
+                            })}
+                          </p>
+                        </div>
+                      </div>
 
-                <div className="row">
-                  <div className="col-sm-4 fw-semibold text-secondary">
-                    Approval Status:
-                  </div>
-                  <div className="col-sm-8">
-                    <span
-                      className={`badge ${
-                        user.approveStatus === "Approved"
-                          ? "bg-primary"
-                          : "bg-warning text-dark"
-                      }`}
-                    >
-                      {user.approveStatus}
-                    </span>
-                  </div>
-                </div>
+                      <div className="row">
+                        <div className="col-sm-4 fw-semibold text-secondary">
+                          Approval Status:
+                        </div>
+                        <div className="col-sm-8">
+                          <span className={`badge ${user.approveStatus === "Approved" ? "bg-primary" : "bg-warning text-dark"}`}>
+                            {user.approveStatus}
+                          </span>
+                        </div>
+                      </div>
+                    </>
+                  )}
 
                 {/* Action Buttons */}
                 <div className="d-flex gap-2 mt-4">

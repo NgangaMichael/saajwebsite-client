@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { X } from "lucide-react";
 import { userFields } from "./userFields";
-import api from "../services/api"; // or your axios instance path
+import api from "../services/api";
 
-export default function AddUserModal({ newUser, handleAddChange, addUser, closeAddModal }) {
+export default function AddUserModal({ newUser, handleAddChange, addUser, closeAddModal, context }) {
   const [committees, setCommittees] = useState([]);
   const [subCommittees, setSubCommittees] = useState([]);
 
@@ -47,25 +47,30 @@ export default function AddUserModal({ newUser, handleAddChange, addUser, closeA
 
         <form className="grid grid-cols-2 gap-4" onSubmit={handleSubmit}>
           {userFields.map((field) => {
-            // ✅ Logic: If we are on the Staff page (designation is fixed), hide the field
-            if (field.name === "designation" && newUser.designation === "Staff") {
-              return null; 
+            
+            // 1. Logic for STAFF page: Hide specific fields
+            if (context === "staff") {
+              const hiddenStaffFields = ["committee", "subCommittee", "membertype", "level", "employmentstatus", "subscription", "approveStatus", "waveSubscriptionStatus"];
+              if (hiddenStaffFields.includes(field.name)) return null;
+              
+              // Also hide designation if it's already hardcoded to 'Staff'
+              if (field.name === "designation" && newUser.designation === "Staff") return null;
             }
 
+            // 2. Logic for USERS page: Filter Designation dropdown
             let options = field.options || [];
 
-            // Inject DB data for these fields
+            if (field.name === "designation" && context === "user") {
+              // Remove "Staff" from the options list
+              options = options.filter(opt => opt !== "Staff");
+            }
+
+            // 3. Inject Dynamic DB Data
             if (field.name === "committee") {
-              options = committees.map((c) => ({
-                label: c.name,
-                value: c.name,
-              }));
+              options = committees.map((c) => ({ label: c.name, value: c.name }));
             }
             if (field.name === "subCommittee") {
-              options = subCommittees.map((s) => ({
-                label: s.name,
-                value: s.name,
-              }));
+              options = subCommittees.map((s) => ({ label: s.name, value: s.name }));
             }
 
             return (

@@ -36,7 +36,7 @@ export default function Dashboard() {
   let navItems = [];
 
   if (isStaffMember) {
-    navItems = baseNavItems.filter((item) => ["profile", "staff"].includes(item.to));
+    navItems = baseNavItems.filter((item) => ["profile", "staff", "communication"].includes(item.to));
   } else {
     if (userLevel === "Level 1") {
       navItems = baseNavItems.filter((item) => ["profile", "homedocs", "committees", "communication", "survey", "service"].includes(item.to));
@@ -69,8 +69,15 @@ export default function Dashboard() {
       // --- Message Logic ---
       const allMessages = commsRes.data || [];
       const readIds = JSON.parse(localStorage.getItem(`read_msgs_${storedUser.id}`)) || [];
+
       const unreadCount = allMessages.filter((comm) => {
-        const isVisible = storedUser.level === "Level 3" || comm.sendto === "All" || comm.sendtoid == storedUser.id || comm.sendto === storedUser.committee;
+        const isStaff = storedUser.designation?.toLowerCase() === "staff";
+        const isVisible = 
+        storedUser.level === "Level 3" || 
+        comm.sendto === "All" || 
+        (comm.sendto === "All Staff" && isStaff) ||
+        comm.sendtoid == storedUser.id || 
+        comm.sendto === storedUser.committee;
         return isVisible && !readIds.includes(comm.id) && comm.sender !== storedUser.username;
       }).length;
       setPendingMessages(unreadCount);

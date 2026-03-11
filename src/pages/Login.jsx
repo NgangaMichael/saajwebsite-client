@@ -32,6 +32,7 @@ export default function Login() {
   });
 
   // Handle login submit
+  // Handle login submit
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -41,48 +42,51 @@ export default function Login() {
 
       localStorage.setItem("auth", "true");
       localStorage.setItem("token", res.data.token);
-      localStorage.setItem("user", JSON.stringify(res.data.user));
 
       if (res.status === 200) {
-      const user = res.data.user;
-      console.log("Logged in user:", user);
+        const user = res.data.user;
+        const isStaff = user.designation?.toLowerCase() === "Staff";
 
-      if (user.subdate) {
-      // Normalize dates to only YYYY-MM-DD
-      const todayStr = new Date().toISOString().split("T")[0];
-      const subDateStr = new Date(user.subdate).toISOString().split("T")[0];
-
-      const isExpired = subDateStr <= todayStr;
-
-      if (isExpired) {
-        try {
-          await api.patch(`/users/${user.id}`, {
-            approveStatus: "Not Approved",
-            subscription: "Inactive",
-          });
-
-          user.approveStatus = "Not Approved";
-          user.subscription = "Inactive";
-
-          alert("⚠️ Your subscription has expired. Please renew to regain access.");
-        } catch (err) {
-          console.error("Error updating expired subscription:", err);
+        // ✅ STAFF BYPASS: If they are staff, skip all checks
+        if (isStaff) {
+          localStorage.setItem("user", JSON.stringify(user));
+          navigate("/dashboard/profile");
+          return; // Exit early
         }
+
+        // --- NORMAL USER LOGIC BELOW ---
+        if (user.subdate) {
+          const todayStr = new Date().toISOString().split("T")[0];
+          const subDateStr = new Date(user.subdate).toISOString().split("T")[0];
+
+          const isExpired = subDateStr <= todayStr;
+
+          if (isExpired) {
+            try {
+              await api.patch(`/users/${user.id}`, {
+                approveStatus: "Not Approved",
+                subscription: "Inactive",
+              });
+
+              user.approveStatus = "Not Approved";
+              user.subscription = "Inactive";
+
+              alert("⚠️ Your subscription has expired. Please renew to regain access.");
+            } catch (err) {
+              console.error("Error updating expired subscription:", err);
+            }
+          }
+        }
+
+        if (user.subscription === "Inactive") {
+          alert("Your account is inactive. Please contact admin for renewal.");
+          return;
+        }
+
+        // Save updated user locally
+        localStorage.setItem("user", JSON.stringify(user));
+        navigate("/dashboard/profile");
       }
-    }
-
-  if (user.subscription === "Inactive") {
-  alert("Your account is inactive. Please contact admin for renewal.");
-  return;
-}
-
-  // Save updated user locally
-  localStorage.setItem("user", JSON.stringify(user));
-
-  // Navigate based on level
-  navigate("/dashboard/profile");
-}
-
     } catch (err) {
       if (err.response) {
         alert(err.response.data.error || "Login failed");

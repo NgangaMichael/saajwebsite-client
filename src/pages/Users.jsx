@@ -569,6 +569,7 @@ const handleDateSelection = async (user, event) => {
       {/* Add User Modal */}
         {adding && (
         <AddUserModal
+            context="user"
             newUser={newUser}
             handleAddChange={handleAddChange}
             addUser={addUser}
@@ -579,6 +580,7 @@ const handleDateSelection = async (user, event) => {
         {/* Edit User Modal */}
         {editingUser && (
         <EditUserModal
+            context="user"
             formData={formData}
             handleEditChange={handleEditChange}
             saveUser={saveUser}

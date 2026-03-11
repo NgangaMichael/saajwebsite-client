@@ -168,6 +168,10 @@ export default function Communication() {
     .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)) // Newest First
     .filter((comm) => {
       if (storedUser.level === "Level 3") return true;
+      // 2. Handle "All Staff" logic ✅
+      if (comm.sendto === "All Staff") {
+        return storedUser.designation?.toLowerCase() === "staff";
+      };
       if (comm.sendto === "All" || comm.sendtoid === "0") return true;
       if (comm.sendtoid == storedUser.id || comm.sendto === storedUser.username) return true;
       if (comm.sendto === storedUser.committee) return true;
@@ -327,6 +331,7 @@ export default function Communication() {
                     sendto: viewingComm.sender,
                     sendtoid: viewingComm.senderId || "0",
                     parentId: viewingComm.parentId || viewingComm.id,
+                    replyMode: true
                   });
                   setAdding(true);
                   closeViewModal();

@@ -97,35 +97,36 @@ export default function EditCommunicationModal({
 
           {/* Dropdown */}
           <select
-  name="sendto"
-  value={formData.sendtoid || ""}
-  onChange={handleSelectChange}
-  className="w-full border p-2 rounded mt-2"
-  required
->
-  <option value="">-- Select recipient --</option>
+            name="sendto"
+            value={formData.sendtoid || ""}
+            onChange={handleSelectChange}
+            className="w-full border p-2 rounded mt-2"
+            required
+          >
+            <option value="">-- Select recipient --</option>
 
-  {userLevel !== "Level 1" && (
-    <>
-      <option value="0" data-name="All">All</option>
-      <optgroup label="Users">
-        {filteredUsers.map((user) => (
-          <option key={user.id} value={user.id} data-name={user.username || user.name}>
-            {user.username || user.name}
-          </option>
-        ))}
-      </optgroup>
-    </>
-  )}
+            {userLevel !== "Level 1" && (
+              <>
+                <option value="0" data-name="All">All</option>
+                <option value="staff_group" data-name="All Staff">All Staff</option>
+                <optgroup label="Users">
+                  {filteredUsers.map((user) => (
+                    <option key={user.id} value={user.id} data-name={user.username || user.name}>
+                      {user.username || user.name}
+                    </option>
+                  ))}
+                </optgroup>
+              </>
+            )}
 
-  <optgroup label="Committees">
-    {filteredCommittees.map((committee) => (
-      <option key={committee.id} value={committee.id} data-name={committee.name}>
-        {committee.name}
-      </option>
-    ))}
-  </optgroup>
-</select>
+            <optgroup label="Committees">
+              {filteredCommittees.map((committee) => (
+                <option key={committee.id} value={committee.id} data-name={committee.name}>
+                  {committee.name}
+                </option>
+              ))}
+            </optgroup>
+          </select>
         </div>
 
         {/* Buttons */}

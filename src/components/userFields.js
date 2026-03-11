@@ -3,7 +3,7 @@ export const userFields = [
   { name: "email", label: "Email", type: "email", required: true },
   { name: "phone", label: "Phone", type: "text", required: false },
   { name: "password", label: "Password", type: "password", required: true },
-  { name: "age", label: "Age", type: "number", required: false },
+  { name: "age", label: "Age", type: "number", required: false, default: 0 },
   { name: "dob", label: "Date of Birth", type: "date", required: false },
   { name: "idpassport", label: "ID/Passport", type: "text", required: false },
   { name: "nationality", label: "Nationality", type: "text", required: false },

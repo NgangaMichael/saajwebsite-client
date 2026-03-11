@@ -595,6 +595,7 @@ const handleUpdateStaff = async () => {
 
       {adding && (
         <AddUserModal
+          context="staff"
           newUser={newStaff}
           handleAddChange={handleAddChange}
           addUser={saveNewStaff}
@@ -605,6 +606,7 @@ const handleUpdateStaff = async () => {
       {/* ✅ Edit Modal (Assuming AddUserModal can be repurposed) */}
       {editing && (
         <AddUserModal
+          context="staff"
           newUser={editStaff}
           isEditing={true} // You might need to add this prop to your modal
           handleAddChange={(e) => setEditStaff({ ...editStaff, [e.target.name]: e.target.value })}
