@@ -262,26 +262,48 @@ export default function Documents() {
       // Level 3: Sees everything
       if (userLevel === "Level 3") return true;
 
+      // Level 2: Conditional visibility
+if (userLevel === "Level 2") {
+  const isPublished = doc.status === 1 || doc.status2 === 1;
+  if (!isPublished) return false;
+
+  // 1. Normalize data and handle the camelCase/lowercase 'subCommittee'
+  const userComm = storedUser?.committee || "";
+  const userSub = (storedUser?.subCommittee || storedUser?.subcommittee) || "";
+  
+  const docComm = doc.committee || "";
+  const docSub = doc.subcommittee || "";
+
+  // 2. Logic: Show if it's a Global Level 2 doc OR matches the user's committee
+  const isGlobal = (docComm === "" || docComm.toLowerCase() === "all");
+  
+  // 3. Match Committee, and only filter by Subcommittee if the document actually has one assigned
+  const matchesCommittee = docComm === userComm;
+  const matchesSub = docSub === "" || docSub === userSub;
+
+  return isGlobal || (matchesCommittee && matchesSub);
+}
+
       // Level 2: Conditional visibility based on Committee/Subcommittee assignment
-      if (userLevel === "Level 2") {
-        const isPublished = doc.status === 1 || doc.status2 === 1;
-        if (!isPublished) return false;
+      // if (userLevel === "Level 2") {
+      //   const isPublished = doc.status === 1 || doc.status2 === 1;
+      //   if (!isPublished) return false;
 
-        // Requirement: If doc committee/subcommittee are "all" or empty, show to all Level 2
-        const docCommitteeEmpty = !doc.committee || doc.committee.toLowerCase() === "all" || doc.committee === "";
-        const docSubEmpty = !doc.subcommittee || doc.subcommittee.toLowerCase() === "all" || doc.subcommittee === "";
+      //   // Requirement: If doc committee/subcommittee are "all" or empty, show to all Level 2
+      //   const docCommitteeEmpty = !doc.committee || doc.committee.toLowerCase() === "all" || doc.committee === "";
+      //   const docSubEmpty = !doc.subcommittee || doc.subcommittee.toLowerCase() === "all" || doc.subcommittee === "";
 
-        if (docCommitteeEmpty && docSubEmpty) {
-          return true;
-        }
+      //   if (docCommitteeEmpty && docSubEmpty) {
+      //     return true;
+      //   }
 
-        // Requirement: If specified, match user's committee/subcommittee
-        // Note: Using storedUser.subCommittee (camelCase) based on your example object
-        const matchesUserCommittee = doc.committee === storedUser?.committee;
-        const matchesUserSubcommittee = doc.subcommittee === storedUser?.subCommittee;
+      //   // Requirement: If specified, match user's committee/subcommittee
+      //   // Note: Using storedUser.subCommittee (camelCase) based on your example object
+      //   const matchesUserCommittee = doc.committee === storedUser?.committee;
+      //   const matchesUserSubcommittee = doc.subcommittee === storedUser?.subCommittee;
 
-        return matchesUserCommittee && matchesUserSubcommittee;
-      }
+      //   return matchesUserCommittee && matchesUserSubcommittee;
+      // }
 
       // Level 1: Only sees if status is 1
       if (userLevel === "Level 1" && doc.status === 1) return true;

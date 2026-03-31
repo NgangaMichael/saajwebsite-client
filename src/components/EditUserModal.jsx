@@ -29,25 +29,36 @@ export default function EditUserModal({
   }, []);
 
   const handleSubmit = (e) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    for (let field of userFields) {
-      if (field.required && !formData[field.name]) {
-        alert(`${field.label} is required`);
-        return;
-      }
-      if (field.type === "email" && formData[field.name] && !/\S+@\S+\.\S+/.test(formData[field.name])) {
-        alert("Invalid email format");
-        return;
-      }
-      if (field.type === "number" && formData[field.name] && isNaN(formData[field.name])) {
-        alert(`${field.label} must be a number`);
-        return;
-      }
+  for (let field of userFields) {
+    const value = formData[field.name];
+
+    // 1. Password Bypass: If editing and password is empty, just skip to next field
+    if (field.name === "password" && (!value || value.trim() === "")) {
+      continue; 
     }
 
-    saveUser();
-  };
+    // 2. Standard Required Check
+    if (field.required && !value) {
+      alert(`${field.label} is required`);
+      return;
+    }
+
+    // 3. Format Validations
+    if (field.type === "email" && value && !/\S+@\S+\.\S+/.test(value)) {
+      alert("Invalid email format");
+      return;
+    }
+    
+    if (field.type === "number" && value && isNaN(value)) {
+      alert(`${field.label} must be a number`);
+      return;
+    }
+  }
+
+  saveUser();
+};
 
   return (
     <div className="fixed inset-0 bg-black/40 flex justify-center items-center z-50">
@@ -106,7 +117,8 @@ export default function EditUserModal({
                     value={formData[field.name] || ""}
                     onChange={handleEditChange}
                     className="w-full border px-3 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                    required={field.required}
+                    // required={field.required}
+                    required={field.name === "password" ? false : field.required}
                     readOnly={field.readonly}
                   />
                 )}

@@ -36,7 +36,7 @@ export default function Users() {
     email: "",
     phone: "",
     password: "",
-    age: "",
+    age: 0,
     dob: "",
     idpassport: "",
     nationality: "",
@@ -116,7 +116,7 @@ const editUser = (user) => {
     username: user.username || "",
     email: user.email || "",
     phone: user.phone || "",
-    password: user.password || "",
+    password: "",
     age: user.age || "",
     dob: user.dob || "",
     idpassport: user.idpassport || "",
@@ -143,18 +143,44 @@ const editUser = (user) => {
   };
 
   const saveUser = async () => {
-    try {
-      const data = await updateUser(editingUser.id, formData, storedUser.username);
-        setUsers((prev) =>
-        prev.map((u) => (u.id === editingUser.id ? data.data : u))
-        );
-        closeEditModal();
-        toast.success(`User "${formData.username}" updated successfully`);
-    } catch (err) {
-      console.error("Error updating user:", err);
-      toast.error("Failed to update user");
+  try {
+    // Create a copy of the data
+    const updatePayload = { ...formData };
+
+    // Remove password if it's empty so the backend doesn't try to hash an empty string
+    if (!updatePayload.password || updatePayload.password.trim() === "") {
+      delete updatePayload.password;
     }
-  };
+
+    // Ensure numeric fields are actually numbers if needed
+    if (updatePayload.age) updatePayload.age = Number(updatePayload.age);
+
+    const data = await updateUser(editingUser.id, updatePayload, storedUser.username);
+    
+    setUsers((prev) => prev.map((u) => (u.id === editingUser.id ? data.data : u)));
+    closeEditModal();
+    toast.success(`User "${formData.username}" updated successfully`);
+  } catch (err) {
+    console.error("Error updating user:", err);
+    const serverError = err.response?.data?.errors?.[0]?.message || "Failed to update user";
+    toast.error(serverError);
+  }
+};
+
+  // const saveUser = async () => {
+  //   try {
+  //     const data = await updateUser(editingUser.id, formData, storedUser.username);
+  //     setUsers((prev) => prev.map((u) => (u.id === editingUser.id ? data.data : u)));
+  //     closeEditModal();
+  //     toast.success(`User "${formData.username}" updated successfully`);
+  //   } catch (err) {
+  //     console.error("Error updating user:", err);
+      
+  //     // Extract server message
+  //     const serverError = err.response?.data?.errors?.[0]?.message || "Failed to update user";
+  //     toast.error(serverError);
+  //   }
+  // };
 
   const closeEditModal = () => {
     setEditingUser(null);
@@ -168,13 +194,23 @@ const editUser = (user) => {
 
   const addUser = async () => {
     try {
-      const data = await apiAddUser(newUser, storedUser.username);
-        setUsers((prev) => [...prev, data.data]);
-        toast.success(`User "${newUser.username}" added successfully`);
-        closeAddModal();
+      const payload = {
+        ...newUser,
+        age: newUser.age === "" ? 0 : Number(newUser.age)
+      };
+
+      const data = await apiAddUser(payload, storedUser.username);
+      setUsers((prev) => [...prev, data.data]);
+      toast.success(`User "${newUser.username}" added successfully`);
+      closeAddModal();
     } catch (err) {
       console.error("Error adding user:", err);
-      toast.error("Failed to add user");
+
+      // Look for the 'error' key we just set in the backend errorHandler
+      const errorMessage = err.response?.data?.error || "Failed to add user";
+      
+      // This will now show "Duplicate entry 'kajala@gmail.com' for key 'email'"
+      toast.error(errorMessage);
     }
   };
 
@@ -185,7 +221,7 @@ const editUser = (user) => {
       email: "",
       phone: "",
       password: "",
-      age: "",
+      age: 0,
       dob: "",
       idpassport: "",
       nationality: "",
