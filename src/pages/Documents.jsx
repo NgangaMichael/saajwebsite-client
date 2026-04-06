@@ -168,20 +168,39 @@ export default function Documents() {
 
   // Edit handlers
   const editDoc = (doc) => {
-    setEditingDoc(doc);
-    setFormData({
-      documentName: doc.documentName || "",
-      uploadedBy: doc.uploadedBy || "",
-      description: doc.description || "",
-      type: doc.type || "",     
-      committeeId: doc.committee || "",
-      subcommitteeId: doc.subcommittee || "",
-    });
-  };
+  setEditingDoc(doc);
+  
+  // --- ADD THIS LINE ---
+  // If the document already has a committee, fetch its subcommittees immediately
+  if (doc.committee) {
+    fetchSubcommittees(doc.committee);
+  }
+
+  setFormData({
+    documentName: doc.documentName || "",
+    uploadedBy: doc.uploadedBy || "",
+    description: doc.description || "",
+    type: doc.type || "",     
+    committeeId: doc.committee || "", // Ensure this matches your API key name
+    subcommitteeId: doc.subcommittee || "",
+  });
+};
+
+  // const handleEditChange = (e) => {
+  //   setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  // };
 
   const handleEditChange = (e) => {
-    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
-  };
+  const { name, value } = e.target;
+  setFormData((prev) => ({ ...prev, [name]: value }));
+
+  // --- ADD THIS LOGIC ---
+  if (name === "committeeId") {
+    fetchSubcommittees(value);
+    // Reset subcommittee selection since the parent committee changed
+    setFormData((prev) => ({ ...prev, subcommitteeId: "" }));
+  }
+};
 
   const saveDocument = async () => {
     try {
