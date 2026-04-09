@@ -109,6 +109,7 @@ export default function EditCommunicationModal({
               <>
                 <option value="0" data-name="All">All</option>
                 <option value="staff_group" data-name="All Staff">All Staff</option>
+                <option value="level2" data-name="Level 2">Level 2</option>
                 <optgroup label="Users">
                   {filteredUsers.map((user) => (
                     <option key={user.id} value={user.id} data-name={user.username || user.name}>

@@ -57,6 +57,26 @@ export default function Survey() {
     setEditingSurvey(null); // Reset so the next "Create" is empty
   };
 
+  // Add this logic inside your Survey component, before the return
+  const filteredSurveys = surveys.filter((survey) => {
+    const userLevel = storedUser?.level;
+
+    // 1. If it's an "all" survey, everyone sees it
+    if (survey.level === "all") return true;
+
+    // 2. If it's a "level 2" survey, only Level 2 and Level 3 users see it
+    if (survey.level === "level 2") {
+      return userLevel === "Level 2" || userLevel === "Level 3";
+    }
+
+    // 3. (Optional) If you have "level 3" specific surveys
+    if (survey.level === "level 3") {
+      return userLevel === "Level 3";
+    }
+
+    return false;
+  });
+
   return (
     <div>
       {/* Header */}
@@ -91,19 +111,20 @@ export default function Survey() {
             <th>Title</th>
             <th>Description</th>
             <th>Status</th>
+            <th>Level</th>
             <th>Action</th>
             <th></th>
           </tr>
         </thead>
         <tbody>
-  {surveys.length === 0 ? (
+  {filteredSurveys.length === 0 ? (
     <tr>
       <td colSpan="6" className="text-center text-muted">
         No surveys available
       </td>
     </tr>
   ) : (
-    surveys.map((survey, idx) => (
+    filteredSurveys.map((survey, idx) => (
       <tr key={survey.id}>
         <td>{idx + 1}</td>
         <td>{survey.title}</td>
@@ -117,6 +138,7 @@ export default function Survey() {
             <span className="text-warning fw-bold">Pending</span>
           )}
         </td>
+        <td>{survey.level}</td>
         
         {/* ACTION COLUMN: Respond button for users */}
         <td>

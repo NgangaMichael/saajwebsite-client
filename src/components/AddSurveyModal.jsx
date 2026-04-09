@@ -8,12 +8,14 @@ export default function AddSurveyModal({ closeModal, refresh, editData }) {
   const isEditing = !!editData;
 
   const [title, setTitle] = useState("");
+  const [level, setLevel] = useState("all");
   const [description, setDescription] = useState("");
   const [questions, setQuestions] = useState([]);
 
   useEffect(() => {
     if (editData) {
       setTitle(editData.title || "");
+      setLevel(editData.level || "");
       setDescription(editData.description || "");
       
       // Parse questions and ensure options is an array
@@ -69,7 +71,7 @@ export default function AddSurveyModal({ closeModal, refresh, editData }) {
       return;
     }
     try {
-      const payload = { title, description, questions };
+      const payload = { title, level, description, questions };
       if (isEditing) {
         await updateSurvey(editData.id, payload);
         toast.success("Updated!");
@@ -97,6 +99,13 @@ export default function AddSurveyModal({ closeModal, refresh, editData }) {
             <div className="mb-3">
               <label className="form-label fw-bold">Title</label>
               <input className="form-control" value={title} onChange={(e) => setTitle(e.target.value)} />
+            </div>
+            <div className="mb-3">
+              <label className="form-label fw-bold">Level</label>
+              <select className="form-select" value={level} onChange={(e) => setLevel(e.target.value)}>
+                <option value="all">All</option>
+                <option value="level 2">Level 2</option>
+              </select>
             </div>
             <div className="mb-3">
               <label className="form-label fw-bold">Description</label>

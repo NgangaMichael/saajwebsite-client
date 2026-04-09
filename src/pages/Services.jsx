@@ -21,12 +21,14 @@ export default function Services() {
   const [adding, setAdding] = useState(false);
   const [newService, setNewService] = useState({
     servicename: "",
+    description: "",
     servicelink: "",
   });
 
   const [editingService, setEditingService] = useState(null);
   const [formData, setFormData] = useState({
     servicename: "",
+    description: "",
     servicelink: "",
   });
 
@@ -88,6 +90,7 @@ export default function Services() {
     setEditingService(service);
     setFormData({
       servicename: service.servicename || "",
+      description: service.description || "",
       servicelink: service.servicelink || "",
     });
   };
@@ -147,7 +150,7 @@ export default function Services() {
           <tr>
             <th>#</th>
             <th>Service Name</th>
-            <th>Link</th>
+            <th>Description</th>
             <th>Actions</th>
           </tr>
         </thead>
@@ -159,26 +162,25 @@ export default function Services() {
               <tr key={service.id}>
                 <td>{idx + 1}</td>
                 <td className="font-weight-bold">{service.servicename}</td>
-                <td>
-                  <a 
-                    href={formatUrl(service.servicelink)} // Use the helper here
-                    target="_blank" 
-                    rel="noreferrer" 
-                    className="text-primary truncate d-inline-block" 
-                    style={{maxWidth: '300px'}}
-                  >
-                    {service.servicelink}
-                  </a>
-                </td>
+                <td className="font-weight-bold">{service.description}</td>
                 <td>
                   <div className="flex gap-3">
-                    <a 
+                    {/* <a 
                       href={formatUrl(service.servicelink)} // And use the helper here
                       target="_blank" 
                       rel="noreferrer" 
                       className="text-green-600"
                     >
                       <ExternalLink size={18} />
+                    </a> */}
+                    <a 
+                      href={formatUrl(service.servicelink)} 
+                      target="_blank" 
+                      rel="noreferrer" 
+                      className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-md transition-colors text-sm"
+                    >
+                      Go to service
+                      <ExternalLink size={16} />
                     </a>
                     
                     {storedUser?.level !== "Level 1" && (

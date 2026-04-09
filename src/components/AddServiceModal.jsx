@@ -12,6 +12,13 @@ export default function AddServiceModal({ newService, handleAddChange, addServic
           onChange={handleAddChange}
         />
         <input
+          name="description"
+          className="form-control mb-3"
+          placeholder="Description"
+          value={newService.description}
+          onChange={handleAddChange}
+        />
+        <input
           name="servicelink"
           className="form-control mb-3"
           placeholder="Service Link (URL)"

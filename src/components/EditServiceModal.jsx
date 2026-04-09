@@ -11,6 +11,13 @@ export default function EditServiceModal({ formData, handleEditChange, saveServi
           value={formData.servicename}
           onChange={handleEditChange}
         />
+        <label className="small">Description</label>
+        <input
+          name="description"
+          className="form-control mb-3"
+          value={formData.description}
+          onChange={handleEditChange}
+        />
         <label className="small">Service Link</label>
         <input
           name="servicelink"

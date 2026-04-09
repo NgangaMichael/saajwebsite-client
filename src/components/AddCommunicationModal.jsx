@@ -64,7 +64,7 @@ export default function AddCommunicationModal({ newComm, handleAddChange, addCom
           ) : (
             <>
               {/* Search input only searches filtered list (Level 3 for staff) */}
-              <input
+              {/* <input
                 list="recipient-options"
                 type="text"
                 placeholder={isStaff ? "Search Admins..." : "Search user or Sub-committee..."}
@@ -77,7 +77,7 @@ export default function AddCommunicationModal({ newComm, handleAddChange, addCom
                     handleAddChange({ target: { name: "sendto", value: e.target.value } });
                   }
                 }}
-              />
+              /> */}
               <datalist id="recipient-options">
                 {filteredUsers.map(user => (
                   <option key={user.id} value={user.username || user.name} />
@@ -98,6 +98,7 @@ export default function AddCommunicationModal({ newComm, handleAddChange, addCom
                   <>
                     <option value="0" data-name="All">All Members</option>
                     <option value="staff_group" data-name="All Staff">All Staff</option>
+                    <option value="level2" data-name="Level 2">Level 2</option>
                   </>
                 )}
 

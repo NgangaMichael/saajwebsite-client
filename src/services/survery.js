@@ -18,6 +18,7 @@ export const getSurveyById = async (id) => {
  * Create survey (Admin)
  */
 export const createSurvey = async (payload) => {
+  // console.log("Creating survey with payload:", payload);
   const res = await api.post("/survey", payload);
   return res.data;
 };

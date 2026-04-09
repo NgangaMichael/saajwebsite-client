@@ -193,7 +193,7 @@ export default function Communication() {
   return (
     <div className="">
       <div>
-        {(storedUser.level === "Level 3" || storedUser.level === "Level 1") && (
+        {(storedUser.level === "Level 3" || storedUser.level === "Level 1"  || storedUser.level === "Level 2") && (
           <button className="btn btn-primary btn-sm float-end" onClick={() => setAdding(true)}>
             Add Communication
           </button>

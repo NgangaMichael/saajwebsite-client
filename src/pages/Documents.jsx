@@ -48,6 +48,7 @@ export default function Documents() {
     file: null,
     type: "",
     status: 0,
+    status2: 1, // Set this to 1 so it's auto-checked
     committeeId: "",
     subcommitteeId: "",
   });
@@ -144,6 +145,7 @@ export default function Documents() {
       form.append("description", newDoc.description);
       form.append("type", newDoc.type);
       form.append("status", newDoc.status);
+      form.append("status2", newDoc.status2); // Add this line here
       if (newDoc.file) form.append("file", newDoc.file);
 
       const data = await apiAddDocument(form);
@@ -364,6 +366,7 @@ if (userLevel === "Level 2") {
               <th scope="col">Sub-Committee</th>
               <th scope="col">Date</th>
               <th scope="col">Actions</th>
+              <th scope="col"><span className="ml-2">A</span>    <span className="ml-3">2</span></th>
             </tr>
           </thead>
           <tbody>
@@ -404,7 +407,7 @@ if (userLevel === "Level 2") {
                           <Trash2 size={18} />
                         </button>
 
-                        {storedUser?.level === "Level 3" && (
+                        {/* {storedUser?.level === "Level 3" && (
                           <input
                             className="form-check-input ms-2"
                             type="checkbox"
@@ -420,9 +423,9 @@ if (userLevel === "Level 2") {
                               cursor: "pointer",
                             }}
                           />
-                        )}
+                        )} */}
 
-                        {storedUser?.level === "Level 3" && (
+                        {/* {storedUser?.level === "Level 3" && (
                           <input
                             className="form-check-input ms-2"
                             type="checkbox"
@@ -438,11 +441,51 @@ if (userLevel === "Level 2") {
                               cursor: "pointer",
                             }}
                           />
-                        )}
+                        )} */}
                       </>
                     )}
                   </div>
                 </td>
+                <td>
+                  <div>
+                    {storedUser?.level === "Level 3" && (
+                      <input
+                        className="form-check-input ms-2"
+                        type="checkbox"
+                        checked={doc.status === 1}
+                        onChange={() => handleStatusToggle(doc)}
+                        title={doc.status === 1 ? "Active" : "Inactive"}
+                        style={{
+                          boxShadow:
+                            doc.status === 1
+                              ? "0 0 5px 2px rgba(40, 167, 69, 0.6)"
+                              : "0 0 5px 2px rgba(220, 53, 69, 0.4)",
+                          borderColor: doc.status === 1 ? "#28a745" : "#dc3545",
+                          cursor: "pointer",
+                        }}
+                      />
+                    )}
+
+                    {storedUser?.level === "Level 3" && (
+                      <input
+                        className="form-check-input ms-2"
+                        type="checkbox"
+                        checked={doc.status2 === 1}
+                        onChange={() => handleStatusToggle2(doc)}
+                        title={doc.status2 === 1 ? "Active" : "Inactive"}
+                        style={{
+                          boxShadow:
+                            doc.status === 1
+                              ? "0 0 5px 2px rgba(40, 167, 69, 0.6)"
+                              : "0 0 5px 2px rgba(220, 53, 69, 0.4)",
+                          borderColor: doc.status === 1 ? "#28a745" : "#dc3545",
+                          cursor: "pointer",
+                        }}
+                      />
+                    )}
+                  </div>
+                </td>
+
               </tr>
             ))}
           </tbody>
