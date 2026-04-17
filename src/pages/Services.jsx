@@ -7,6 +7,7 @@ import {
   updateService,
   deleteService as apiDeleteService,
 } from "../services/service";
+import api from "../services/api";
 import AddServiceModal from "../components/AddServiceModal";
 import EditServiceModal from "../components/EditServiceModal";
 import { ToastContainer, toast } from "react-toastify";
@@ -23,6 +24,7 @@ export default function Services() {
     servicename: "",
     description: "",
     servicelink: "",
+    file: null, // New state for file
   });
 
   const [editingService, setEditingService] = useState(null);
@@ -55,6 +57,18 @@ export default function Services() {
     fetchServices();
   }, []);
 
+  const handleFileChange = (e) => {
+    setNewService((prev) => ({ ...prev, file: e.target.files[0], servicelink: "" }));
+  };
+
+  const handleEditFileChange = (e) => {
+  setFormData((prev) => ({ 
+    ...prev, 
+    file: e.target.files[0], 
+    servicelink: "" // Clear link if file is chosen
+  }));
+};
+
   const deleteService = async (id) => {
     if (!window.confirm("Are you sure you want to delete this service?")) return;
     try {
@@ -71,20 +85,61 @@ export default function Services() {
   };
 
   const addService = async () => {
-    try {
-      const data = await apiAddService(newService);
-      setServices((prev) => [...prev, data.data]);
-      toast.success(`Service "${newService.servicename}" added`);
-      closeAddModal();
-    } catch (err) {
-      toast.error("Failed to add service");
+  try {
+    const formData = new FormData();
+    formData.append("servicename", newService.servicename);
+    formData.append("description", newService.description);
+    
+    if (newService.file) {
+      formData.append("file", newService.file); // The backend will save this and return a path
+    } else {
+      formData.append("servicelink", newService.servicelink);
     }
-  };
+
+    const data = await apiAddService(formData); // Note: API call now sends FormData
+    setServices((prev) => [...prev, data.data]);
+    toast.success(`Service "${newService.servicename}" added`);
+    closeAddModal();
+  } catch (err) {
+    toast.error("Failed to add service");
+  }
+};
+
+// Updated formatUrl to handle local paths vs web links
+// src/pages/Services.jsx
+
+// src/pages/Services.jsx
+
+// src/pages/Services.jsx
+
+const formatUrl = (path) => {
+  if (!path) return "#";
+
+  // 1. Handle external links (google.com, etc.)
+  if (/^https?:\/\//i.test(path)) {
+    return path;
+  }
+
+  // 2. Handle files (matching your Documents logic)
+  // If the path starts with 'uploads/', we append it to the API base URL
+  if (path.startsWith('uploads/')) {
+    // This results in http://localhost:8080/api/uploads/...
+    return `${api.defaults.baseURL}/${path}`;
+  }
+
+  // 3. Fallback for raw domains entered without http
+  return `https://${path}`;
+};
 
   const closeAddModal = () => {
-    setAdding(false);
-    setNewService({ servicename: "", servicelink: "" });
-  };
+  setAdding(false);
+  setNewService({ 
+    servicename: "", 
+    description: "", 
+    servicelink: "", 
+    file: null // Ensure file is cleared
+  });
+};
 
   const editService = (service) => {
     setEditingService(service);
@@ -100,29 +155,35 @@ export default function Services() {
   };
 
   const saveService = async () => {
-    try {
-      const data = await updateService(editingService.id, formData);
-      setServices((prev) =>
-        prev.map((s) => (s.id === editingService.id ? data.data : s))
-      );
-      closeEditModal();
-      toast.success("Service updated successfully");
-    } catch (err) {
-      toast.error("Failed to update service");
+  try {
+    const dataToSend = new FormData();
+    dataToSend.append("servicename", formData.servicename);
+    dataToSend.append("description", formData.description);
+    
+    // Check if we are sending a new file or a link
+    if (formData.file) {
+      dataToSend.append("file", formData.file);
+    } else {
+      dataToSend.append("servicelink", formData.servicelink);
     }
-  };
+
+    const data = await updateService(editingService.id, dataToSend);
+    
+    setServices((prev) =>
+      prev.map((s) => (s.id === editingService.id ? data.data : s))
+    );
+    closeEditModal();
+    toast.success("Service updated successfully");
+  } catch (err) {
+    toast.error("Failed to update service");
+  }
+};
 
   const closeEditModal = () => setEditingService(null);
 
   const filteredServices = services.filter((s) =>
     s.servicename?.toLowerCase().includes(searchTerm.toLowerCase())
   );
-
-  const formatUrl = (url) => {
-    if (!url) return "#";
-    // If the url doesn't start with http:// or https://, prepend https://
-    return /^https?:\/\//i.test(url) ? url : `https://${url}`;
-  };
 
   if (loading) return <div className="text-center p-5">Loading services...</div>;
 
@@ -205,6 +266,7 @@ export default function Services() {
         <AddServiceModal
           newService={newService}
           handleAddChange={handleAddChange}
+          handleFileChange={handleFileChange}
           addService={addService}
           closeAddModal={closeAddModal}
         />
@@ -214,6 +276,7 @@ export default function Services() {
         <EditServiceModal
           formData={formData}
           handleEditChange={handleEditChange}
+          handleFileChange={handleEditFileChange}
           saveService={saveService}
           closeEditModal={closeEditModal}
         />

@@ -167,17 +167,28 @@ export default function Communication() {
   const filteredCommunications = communications
     .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)) // Newest First
     .filter((comm) => {
-      if (storedUser.level === "Level 3") return true;
-      // 2. Handle "All Staff" logic ✅
-      if (comm.sendto === "All Staff") {
-        return storedUser.designation?.toLowerCase() === "staff";
-      };
-      if (comm.sendto === "All" || comm.sendtoid === "0") return true;
-      if (comm.sendtoid == storedUser.id || comm.sendto === storedUser.username) return true;
-      if (comm.sendto === storedUser.committee) return true;
-      if (comm.sender === storedUser.username) return true;
-      return false;
-    })
+  if (storedUser.level === "Level 3") return true;
+
+  // 1. Handle Group Broadcasts by String Name
+  if (comm.sendto === "All Staff") {
+    return storedUser.designation?.toLowerCase() === "staff";
+  }
+  
+  if (comm.sendto === "Level 2") {
+    return storedUser.level === "Level 2";
+  }
+
+  if (comm.sendto === "All" || (comm.sendtoid == 0 && comm.sendto === "All")) {
+    return true;
+  }
+
+  // 2. Handle Direct Messages
+  if (comm.sendtoid == storedUser.id || comm.sendto === storedUser.username) return true;
+  if (comm.sendto === storedUser.committee) return true;
+  if (comm.sender === storedUser.username) return true;
+
+  return false;
+})
     .filter((comm) =>
       comm.title?.toLowerCase().includes(searchTerm.toLowerCase())
     );

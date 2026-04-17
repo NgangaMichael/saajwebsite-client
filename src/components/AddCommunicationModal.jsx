@@ -97,8 +97,8 @@ export default function AddCommunicationModal({ newComm, handleAddChange, addCom
                 {!isStaff && userLevel !== "Level 1" && (
                   <>
                     <option value="0" data-name="All">All Members</option>
-                    <option value="staff_group" data-name="All Staff">All Staff</option>
-                    <option value="level2" data-name="Level 2">Level 2</option>
+                    <option value="0" data-name="All Staff">All Staff</option>
+                    <option value="0" data-name="Level 2">Level 2</option>
                   </>
                 )}
 

@@ -13,14 +13,14 @@ export const getServiceById = async (id) => {
 };
 
 // Add service
-export const addService = async (committeeData) => {
-  const res = await api.post("/services", committeeData);
+export const addService = async (formData) => {
+  // Axios will automatically set 'Content-Type': 'multipart/form-data'
+  const res = await api.post("/services", formData);
   return res.data;
 };
 
-// Update service
-export const updateService = async (id, committeeData) => {
-  const res = await api.patch(`/services/${id}`, committeeData);
+export const updateService = async (id, formData) => {
+  const res = await api.patch(`/services/${id}`, formData);
   return res.data;
 };
 
