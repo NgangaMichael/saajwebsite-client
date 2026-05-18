@@ -19,20 +19,20 @@ export default function Committees() {
   const [searchTerm, setSearchTerm] = useState("");
   const storedUser = JSON.parse(localStorage.getItem("user"));
 
-  // Add state
+  // Add state - ✅ Initialize 'head' as an array
   const [adding, setAdding] = useState(false);
   const [newCommittee, setNewCommittee] = useState({
     name: "",
-    head: "",
+    head: [], 
     mcrep: "",
     subCommittee: "",
   });
 
-  // Edit state
+  // Edit state - ✅ Initialize 'head' as an array
   const [editingCommittee, setEditingCommittee] = useState(null);
   const [formData, setFormData] = useState({
     name: "",
-    head: "",
+    head: [],
     mcrep: "",
     subCommittee: "",
   });
@@ -61,10 +61,10 @@ export default function Committees() {
     try {
       await apiDeleteCommittee(id, storedUser.username);
       setCommittees((prev) => prev.filter((c) => c.id !== id));
-          toast.success("Committee deleted successfully");
+      toast.success("Committee deleted successfully");
     } catch (err) {
       console.error("Error deleting committee:", err);
-          toast.error("Failed to delete committee");
+      toast.error("Failed to delete committee");
     }
   };
 
@@ -77,11 +77,11 @@ export default function Committees() {
     try {
       const data = await apiAddCommittee(newCommittee);
       setCommittees((prev) => [...prev, data.data]);
-          toast.success(`Committee "${newCommittee.name}" created successfully`);
+      toast.success(`Committee "${newCommittee.name}" created successfully`);
       closeAddModal();
     } catch (err) {
       console.error("Error adding committee:", err);
-          toast.error("Failed to create committee");
+      toast.error("Failed to create committee");
     }
   };
 
@@ -89,7 +89,7 @@ export default function Committees() {
     setAdding(false);
     setNewCommittee({
       name: "",
-      head: "",
+      head: [],
       mcrep: "",
       subCommittee: "",
     });
@@ -100,7 +100,7 @@ export default function Committees() {
     setEditingCommittee(committee);
     setFormData({
       name: committee.name || "",
-      head: committee.head || "",
+      head: Array.isArray(committee.head) ? committee.head : committee.head ? committee.head.split(",") : [],
       mcrep: committee.mcrep || "",
       subCommittee: committee.subCommittee || "",
     });
@@ -117,10 +117,10 @@ export default function Committees() {
         prev.map((c) => (c.id === editingCommittee.id ? data.data : c))
       );
       closeEditModal();
-          toast.success(`Committee "${formData.name}" updated successfully`);
+      toast.success(`Committee "${formData.name}" updated successfully`);
     } catch (err) {
       console.error("Error updating committee:", err);
-          toast.error("Failed to update committee");
+      toast.error("Failed to update committee");
     }
   };
 
@@ -128,7 +128,7 @@ export default function Committees() {
     setEditingCommittee(null);
     setFormData({
       name: "",
-      head: "",
+      head: [],
       mcrep: "",
       subCommittee: "",
     });
@@ -150,17 +150,15 @@ export default function Committees() {
     <div className="">
       {/* Header */}
       <div>
-        {/* ✅ Wrap the Add button as well */}
         {storedUser?.level !== "Level 1" && (
           <button className="btn btn-primary btn-sm float-end" onClick={() => setAdding(true)}>
             Add Sub-Committee
           </button>
         )}
-        {/* <button className="btn btn-primary btn-sm float-end" onClick={() => setAdding(true)}>Add Sub-Committee</button> */}
         <input
           className="form-control float-end w-25 form-control-sm mx-2"
           type="text"
-          placeholder="Search by head..."
+          placeholder="Search by sub-committee name..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
@@ -177,7 +175,7 @@ export default function Committees() {
             <tr className="">
               <th scope="col">#</th>
               <th scope="col">Sub-Committee</th>
-              <th scope="col">Head</th>
+              <th scope="col">Head(s)</th>
               <th scope="col">MC-REP</th>
               <th scope="col">Date</th>
               <th scope="col">Actions</th>
@@ -198,9 +196,16 @@ export default function Committees() {
                     idx % 2 === 0 ? "bg-white" : "bg-gray-50"
                   } hover:bg-gray-100`}
                 >
-                  <td>{idx+1}</td>
+                  <td>{idx + 1}</td>
                   <td>{committee.name}</td>
-                  <td>{committee.head}</td>
+                  
+                  {/* ✅ Render Head List separated by commas safely */}
+                  <td>
+                    {Array.isArray(committee.head)
+                      ? committee.head.join(", ")
+                      : committee.head || "—"}
+                  </td>
+
                   <td>{committee.mcrep}</td>
                   <td>{new Date(committee.createdAt).toLocaleDateString()}</td>
                   <td>
@@ -213,7 +218,6 @@ export default function Committees() {
                         <Eye size={18} />
                       </button>
 
-                      {/* ✅ Only show Pencil and Trash if level is NOT Level 1 */}
                       {storedUser?.level !== "Level 1" && (
                         <>
                           <button
@@ -234,31 +238,6 @@ export default function Committees() {
                       )}
                     </div>
                   </td>
-                  {/* <td>
-                    <div className="flex justify-center gap-3">
-                      <button
-                        onClick={() => navigate(`${committee.id}`)}
-                        className="text-green-600 hover:text-green-800 transition"
-                        title="View details"
-                      >
-                        <Eye size={18} />
-                      </button>
-                      <button
-                        onClick={() => editCommittee(committee)}
-                        className="text-blue-600 hover:text-blue-800 transition"
-                        title="Edit committee"
-                      >
-                        <Pencil size={18} />
-                      </button>
-                      <button
-                        onClick={() => deleteCommittee(committee.id)}
-                        className="text-red-600 hover:text-red-800 transition"
-                        title="Delete committee"
-                      >
-                        <Trash2 size={18} />
-                      </button>
-                    </div>
-                  </td> */}
                 </tr>
               ))
             )}

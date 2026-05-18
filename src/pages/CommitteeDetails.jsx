@@ -91,8 +91,17 @@ export default function CommitteeDetails() {
             {/* Left Column: Basic Info */}
             <div className="col-md-6 space-y-4">
               <div>
-                <label className="text-muted small text-uppercase font-weight-bold">Committee Head</label>
-                <p className="h5">{committee.head || "Not Assigned"}</p>
+                {/* ✅ Pluralized label dynamically for clarity */}
+                <label className="text-muted small text-uppercase font-weight-bold">
+                  {Array.isArray(committee.head) && committee.head.length > 1 ? "Committee Heads" : "Committee Head"}
+                </label>
+                
+                {/* ✅ Safely join multiple heads using a comma separator */}
+                <p className="h5">
+                  {Array.isArray(committee.head)
+                    ? committee.head.join(", ")
+                    : committee.head || "Not Assigned"}
+                </p>
               </div>
               <div>
                 <label className="text-muted small text-uppercase font-weight-bold">MC Representative</label>

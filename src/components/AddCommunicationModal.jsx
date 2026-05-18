@@ -5,7 +5,7 @@ import { getCommittees } from "../services/committees";
 export default function AddCommunicationModal({ newComm, handleAddChange, addComm, closeAddModal, userLevel }) {
   const [users, setUsers] = useState([]);
   const [committees, setCommittees] = useState([]);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState(""); 
 
   const currentUser = JSON.parse(localStorage.getItem("user"));
   const isStaff = currentUser?.designation?.toLowerCase() === "staff";
@@ -48,6 +48,11 @@ export default function AddCommunicationModal({ newComm, handleAddChange, addCom
     u.username?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  // Filter committees directly if you decide to uncomment or use the search field later
+  const filteredCommittees = committees.filter(c =>
+    c.name?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
     <div className="fixed inset-0 bg-black/40 flex justify-center items-center z-50">
       <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-lg">
@@ -63,21 +68,6 @@ export default function AddCommunicationModal({ newComm, handleAddChange, addCom
             </div>
           ) : (
             <>
-              {/* Search input only searches filtered list (Level 3 for staff) */}
-              {/* <input
-                list="recipient-options"
-                type="text"
-                placeholder={isStaff ? "Search Admins..." : "Search user or Sub-committee..."}
-                className="w-full border p-2 rounded mt-2"
-                onChange={(e) => {
-                  setSearchTerm(e.target.value);
-                  const match = users.find(item => (item.username || item.name) === e.target.value);
-                  if (match) {
-                    handleAddChange({ target: { name: "sendtoid", value: match.id } });
-                    handleAddChange({ target: { name: "sendto", value: e.target.value } });
-                  }
-                }}
-              /> */}
               <datalist id="recipient-options">
                 {filteredUsers.map(user => (
                   <option key={user.id} value={user.username || user.name} />
@@ -102,7 +92,18 @@ export default function AddCommunicationModal({ newComm, handleAddChange, addCom
                   </>
                 )}
 
-                {/* 2. USERS: If staff, this only contains Level 3 */}
+                {/* 2. COMMITTEES: Hidden for Staff, placed BEFORE users */}
+                {!isStaff && filteredCommittees.length > 0 && (
+                  <optgroup label="Sub-Committees">
+                    {filteredCommittees.map(committee => (
+                      <option key={committee.id} value={committee.id} data-name={committee.name}>
+                        {committee.name}
+                      </option>
+                    ))}
+                  </optgroup>
+                )}
+
+                {/* 3. USERS: If staff, this only contains Level 3 */}
                 <optgroup label={isStaff ? "Authorized Admins (Level 3)" : "Users"}>
                   {filteredUsers.map(user => (
                     <option key={user.id} value={user.id} data-name={user.username || user.name}>
@@ -110,17 +111,6 @@ export default function AddCommunicationModal({ newComm, handleAddChange, addCom
                     </option>
                   ))}
                 </optgroup>
-
-                {/* 3. COMMITTEES: Hidden for Staff */}
-                {!isStaff && committees.length > 0 && (
-                  <optgroup label="Committees">
-                    {committees.map(committee => (
-                      <option key={committee.id} value={committee.id} data-name={committee.name}>
-                        {committee.name}
-                      </option>
-                    ))}
-                  </optgroup>
-                )}
               </select>
             </>
           )}

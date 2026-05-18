@@ -105,28 +105,34 @@ export default function EditCommunicationModal({
           >
             <option value="">-- Select recipient --</option>
 
+            {/* Global broadcast options available only for Level 2+ */}
             {userLevel !== "Level 1" && (
               <>
                 <option value="0" data-name="All">All</option>
                 <option value="staff_group" data-name="All Staff">All Staff</option>
                 <option value="level2" data-name="Level 2">Level 2</option>
-                <optgroup label="Users">
-                  {filteredUsers.map((user) => (
-                    <option key={user.id} value={user.id} data-name={user.username || user.name}>
-                      {user.username || user.name}
-                    </option>
-                  ))}
-                </optgroup>
               </>
             )}
 
-            <optgroup label="Committees">
+            {/* 1. Committees group comes first now */}
+            <optgroup label="Sub-Committees">
               {filteredCommittees.map((committee) => (
                 <option key={committee.id} value={committee.id} data-name={committee.name}>
                   {committee.name}
                 </option>
               ))}
             </optgroup>
+
+            {/* 2. Users group follows underneath */}
+            {userLevel !== "Level 1" && (
+              <optgroup label="Users">
+                {filteredUsers.map((user) => (
+                  <option key={user.id} value={user.id} data-name={user.username || user.name}>
+                    {user.username || user.name}
+                  </option>
+                ))}
+              </optgroup>
+            )}
           </select>
         </div>
 
