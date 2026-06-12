@@ -3,9 +3,12 @@ import { X } from "lucide-react";
 import { userFields } from "./userFields";
 import api from "../services/api";
 
-export default function AddUserModal({ newUser, handleAddChange, addUser, closeAddModal, context }) {
+export default function AddUserModal({ newUser, handleAddChange, addUser, closeAddModal, context, allUsers = [] }) {
   const [committees, setCommittees] = useState([]);
   const [subCommittees, setSubCommittees] = useState([]);
+
+  // Extract direct members for the conditional dropdown
+  const directMembers = allUsers.filter(u => u.membertype === "Direct");
 
   useEffect(() => {
     const fetchDropdowns = async () => {
@@ -14,7 +17,6 @@ export default function AddUserModal({ newUser, handleAddChange, addUser, closeA
           api.get("/committees"),
           api.get("/subcommittees"),
         ]);
-
         setCommittees(committeeRes.data.data || []);
         setSubCommittees(subcommitteeRes.data.data || []);
       } catch (err) {
@@ -27,11 +29,24 @@ export default function AddUserModal({ newUser, handleAddChange, addUser, closeA
   const handleSubmit = (e) => {
     e.preventDefault();
     for (let field of userFields) {
+      // Skip conditional validations if membertype is Indirect
+      if (newUser.membertype === "Indirect") {
+        const hiddenIndirectFields = ["subscription", "fileNumber", "approveStatus", "waveSubscriptionStatus"];
+        if (hiddenIndirectFields.includes(field.name)) continue;
+      }
+
       if (field.required && !newUser[field.name]) {
         alert(`${field.label} is required`);
         return;
       }
     }
+
+    // Extra manual check for the conditional dropdown
+    if (newUser.membertype === "Indirect" && !newUser.associatedDirectMember) {
+      alert("Please select an associated Direct Member");
+      return;
+    }
+
     addUser();
   };
 
@@ -52,20 +67,21 @@ export default function AddUserModal({ newUser, handleAddChange, addUser, closeA
             if (context === "staff") {
               const hiddenStaffFields = ["committee", "subCommittee", "membertype", "level", "employmentstatus", "subscription", "approveStatus", "waveSubscriptionStatus"];
               if (hiddenStaffFields.includes(field.name)) return null;
-              
-              // Also hide designation if it's already hardcoded to 'Staff'
               if (field.name === "designation" && newUser.designation === "Staff") return null;
             }
 
-            // 2. Logic for USERS page: Filter Designation dropdown
+            // NEW: 2. Logic for Indirect Members: Hide status/billing elements
+            if (context === "user" && newUser.membertype === "Indirect") {
+              const hiddenIndirectFields = ["subscription", "fileNumber", "approveStatus", "waveSubscriptionStatus"];
+              if (hiddenIndirectFields.includes(field.name)) return null;
+            }
+
             let options = field.options || [];
 
             if (field.name === "designation" && context === "user") {
-              // Remove "Staff" from the options list
               options = options.filter(opt => opt !== "Staff");
             }
 
-            // 3. Inject Dynamic DB Data
             if (field.name === "committee") {
               options = committees.map((c) => ({ label: c.name, value: c.name }));
             }
@@ -86,10 +102,7 @@ export default function AddUserModal({ newUser, handleAddChange, addUser, closeA
                   >
                     <option value="">Select {field.label}</option>
                     {options.map((option) => (
-                      <option
-                        key={option.value || option}
-                        value={option.value || option}
-                      >
+                      <option key={option.value || option} value={option.value || option}>
                         {option.label || option}
                       </option>
                     ))}
@@ -109,18 +122,32 @@ export default function AddUserModal({ newUser, handleAddChange, addUser, closeA
             );
           })}
 
+          {/* NEW: Conditional Associated Direct Member Field */}
+          {context === "user" && newUser.membertype === "Indirect" && (
+            <div className="col-span-2 border p-3 rounded bg-gray-50 animate-fadeIn">
+              <label className="block text-gray-700 mb-1 font-semibold">Associated Direct Member</label>
+              <select
+                name="associatedDirectMember"
+                value={newUser.associatedDirectMember || ""}
+                onChange={handleAddChange}
+                className="w-full border px-3 py-2 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white"
+                required
+              >
+                <option value="">Select the sponsor Direct Member</option>
+                {directMembers.map((member) => (
+                  <option key={member.id} value={member.username}>
+                    {member.username} ({member.fileNumber || "No Member No."})
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
           <div className="col-span-2 flex justify-end mt-6 gap-3">
-            <button
-              type="button"
-              onClick={closeAddModal}
-              className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
-            >
+            <button type="button" onClick={closeAddModal} className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300">
               Cancel
             </button>
-            <button
-              type="submit"
-              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
-            >
+            <button type="submit" className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
               Save
             </button>
           </div>

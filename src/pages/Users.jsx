@@ -52,6 +52,7 @@ export default function Users() {
     subscription: "",
     fileNumber: "",
     membertype: "",
+    associatedDirectMember: "",
     approveStatus: "",
     waveSubscriptionStatus: "",
   });
@@ -59,12 +60,64 @@ export default function Users() {
   const navigate = useNavigate();
 
   // Fetch users
+  // const fetchUsers = async () => {
+  //   try {
+  //     const data = await getUsers();
+
+  //     const filteredUsers = data.data.filter((user) => {
+  //       const staffValue = user.staff?.trim().toLowerCase();
+  //       return staffValue !== "yes";
+  //     });
+
+  //     setUsers(filteredUsers);
+  //   } catch (err) {
+  //     console.error("Error fetching users:", err);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
+
   const fetchUsers = async () => {
     try {
       const data = await getUsers();
+      
+      // Fallback safely if data.data is missing
+      const allFetchedUsers = data?.data || [];
 
-      const filteredUsers = data.data.filter((user) => {
-        const staffValue = user.staff?.trim().toLowerCase();
+      // 1. Build the complete map of Direct Members FIRST
+      const directMembersMap = {};
+      allFetchedUsers.forEach(user => {
+        if (user && user.membertype === "Direct" && user.username) {
+          // Lowercase the key to make lookups completely case-insensitive
+          directMembersMap[user.username.trim().toLowerCase()] = user;
+        }
+      });
+
+      // 2. Map through all users to apply data inheritance for Indirect members
+      const compiledUsers = allFetchedUsers.map((user) => {
+        if (user && user.membertype === "Indirect" && user.associatedDirectMember) {
+          const lookupKey = user.associatedDirectMember.trim().toLowerCase();
+          const sponsor = directMembersMap[lookupKey];
+          
+          if (sponsor) {
+            return {
+              ...user,
+              // Fallback to the sponsor's status metrics seamlessly
+              subscription: sponsor.subscription || "Inactive",
+              fileNumber: sponsor.fileNumber || "-",
+              approveStatus: sponsor.approveStatus || "Pending",
+              waveSubscriptionStatus: sponsor.waveSubscriptionStatus || "No",
+              subdate: sponsor.subdate || null,
+            };
+          }
+        }
+        return user;
+      });
+
+      // 3. Filter out staff entries exactly as before
+      const filteredUsers = compiledUsers.filter((user) => {
+        const staffValue = user?.staff?.trim().toLowerCase();
         return staffValue !== "yes";
       });
 
@@ -132,6 +185,7 @@ const editUser = (user) => {
     subscription: user.subscription || "",
     fileNumber: user.fileNumber || "",
     membertype: user.membertype || "",
+    associatedDirectMember: user.associatedDirectMember || "",
     approveStatus: user.approveStatus || "",
     waveSubscriptionStatus: user.waveSubscriptionStatus || "",
   });
@@ -144,19 +198,29 @@ const editUser = (user) => {
 
   const saveUser = async () => {
   try {
-    // Create a copy of the data
     const updatePayload = { ...formData };
 
-    // Remove password if it's empty so the backend doesn't try to hash an empty string
+    // If Indirect, inherit fields from the selected Direct Member
+    if (updatePayload.membertype === "Indirect" && updatePayload.associatedDirectMember) {
+      const sponsor = users.find(
+        u => u.membertype === "Direct" &&
+        u.username.trim().toLowerCase() === updatePayload.associatedDirectMember.trim().toLowerCase()
+      );
+      if (sponsor) {
+        updatePayload.subscription = sponsor.subscription || "Inactive";
+        updatePayload.fileNumber = sponsor.fileNumber || "";
+        updatePayload.approveStatus = sponsor.approveStatus || "Pending";
+        updatePayload.waveSubscriptionStatus = sponsor.waveSubscriptionStatus || "No";
+      }
+    }
+
     if (!updatePayload.password || updatePayload.password.trim() === "") {
       delete updatePayload.password;
     }
 
-    // Ensure numeric fields are actually numbers if needed
     if (updatePayload.age) updatePayload.age = Number(updatePayload.age);
 
     const data = await updateUser(editingUser.id, updatePayload, storedUser.username);
-    
     setUsers((prev) => prev.map((u) => (u.id === editingUser.id ? data.data : u)));
     closeEditModal();
     toast.success(`User "${formData.username}" updated successfully`);
@@ -184,7 +248,7 @@ const editUser = (user) => {
 
   const closeEditModal = () => {
     setEditingUser(null);
-    setFormData({ username: "", email: "", phone: "" });
+    setFormData({ username: "", email: "", phone: "", associatedDirectMember: "" });
   };
 
   // Add handlers
@@ -193,26 +257,36 @@ const editUser = (user) => {
   };
 
   const addUser = async () => {
-    try {
-      const payload = {
-        ...newUser,
-        age: newUser.age === "" ? 0 : Number(newUser.age)
-      };
+  try {
+    let payload = {
+      ...newUser,
+      age: newUser.age === "" ? 0 : Number(newUser.age)
+    };
 
-      const data = await apiAddUser(payload, storedUser.username);
-      setUsers((prev) => [...prev, data.data]);
-      toast.success(`User "${newUser.username}" added successfully`);
-      closeAddModal();
-    } catch (err) {
-      console.error("Error adding user:", err);
-
-      // Look for the 'error' key we just set in the backend errorHandler
-      const errorMessage = err.response?.data?.error || "Failed to add user";
-      
-      // This will now show "Duplicate entry 'kajala@gmail.com' for key 'email'"
-      toast.error(errorMessage);
+    // If Indirect, inherit fields from the selected Direct Member
+    if (payload.membertype === "Indirect" && payload.associatedDirectMember) {
+      const sponsor = users.find(
+        u => u.membertype === "Direct" &&
+        u.username.trim().toLowerCase() === payload.associatedDirectMember.trim().toLowerCase()
+      );
+      if (sponsor) {
+        payload.subscription = sponsor.subscription || "Inactive";
+        payload.fileNumber = sponsor.fileNumber || "";
+        payload.approveStatus = sponsor.approveStatus || "Pending";
+        payload.waveSubscriptionStatus = sponsor.waveSubscriptionStatus || "No";
+      }
     }
-  };
+
+    const data = await apiAddUser(payload, storedUser.username);
+    setUsers((prev) => [...prev, data.data]);
+    toast.success(`User "${newUser.username}" added successfully`);
+    closeAddModal();
+  } catch (err) {
+    console.error("Error adding user:", err);
+    const errorMessage = err.response?.data?.error || "Failed to add user";
+    toast.error(errorMessage);
+  }
+};
 
   const closeAddModal = () => {
     setAdding(false);
@@ -235,58 +309,102 @@ const editUser = (user) => {
       designation: "",
       subscription: "",
       fileNumber: "",
+      associatedDirectMember: "",
       approveStatus: "",
       waveSubscriptionStatus: "",
     });
   };
 
-  const handleSubscriptionToggle = async (user) => {
+//   const handleSubscriptionToggle = async (user) => {
+//   const newStatus = user.subscription === "Active" ? "Inactive" : "Active";
+
+//   try {
+//     setUsers((prev) =>
+//       prev.map((u) =>
+//         u.id === user.id ? { ...u, subscription: newStatus } : u
+//       )
+//     );
+
+//     await updateUser(user.id, { subscription: newStatus }, storedUser.username);
+//     toast.info(`Subscription for ${user.username} set to ${newStatus}`);
+
+//   } catch (err) {
+//     console.error("Error updating subscription:", err);
+//     toast.error("Failed to update subscription");
+
+//     setUsers((prev) =>
+//       prev.map((u) =>
+//         u.id === user.id ? { ...u, subscription: user.subscription } : u
+//       )
+//     );
+//   }
+// };
+
+const handleSubscriptionToggle = async (user) => {
   const newStatus = user.subscription === "Active" ? "Inactive" : "Active";
 
   try {
-    // Optimistic UI update
+    // Find associated indirect members if this is a Direct member
+    const associatedIndirects = user.membertype === "Direct"
+      ? users.filter(u => u.associatedDirectMember?.trim().toLowerCase() === user.username.trim().toLowerCase())
+      : [];
+
+    // Optimistic UI update for direct member + all associated indirects
     setUsers((prev) =>
-      prev.map((u) =>
-        u.id === user.id ? { ...u, subscription: newStatus } : u
+      prev.map((u) => {
+        if (u.id === user.id) return { ...u, subscription: newStatus };
+        if (associatedIndirects.some(ind => ind.id === u.id)) return { ...u, subscription: newStatus };
+        return u;
+      })
+    );
+
+    // Update the direct member
+    await updateUser(user.id, { subscription: newStatus }, storedUser.username);
+
+    // Update all associated indirects
+    await Promise.all(
+      associatedIndirects.map(ind =>
+        updateUser(ind.id, { subscription: newStatus }, storedUser.username)
       )
     );
 
-    // Update backend
-    await updateUser(user.id, storedUser.username, { subscription: newStatus });
     toast.info(
-      `Subscription for ${user.username} set to ${newStatus}`
+      associatedIndirects.length > 0
+        ? `Subscription for ${user.username} and ${associatedIndirects.length} associated member(s) set to ${newStatus}`
+        : `Subscription for ${user.username} set to ${newStatus}`
     );
 
-    console.log(`Subscription for ${user.username} changed to ${newStatus}`);
   } catch (err) {
     console.error("Error updating subscription:", err);
-    alert("Failed to update subscription. Please try again.");
     toast.error("Failed to update subscription");
 
-    // Revert UI if update fails
+    // Revert UI for direct member + all associated indirects
+    const associatedIndirects = user.membertype === "Direct"
+      ? users.filter(u => u.associatedDirectMember?.trim().toLowerCase() === user.username.trim().toLowerCase())
+      : [];
+
     setUsers((prev) =>
-      prev.map((u) =>
-        u.id === user.id ? { ...u, subscription: user.subscription } : u
-      )
+      prev.map((u) => {
+        if (u.id === user.id) return { ...u, subscription: user.subscription };
+        if (associatedIndirects.some(ind => ind.id === u.id)) return { ...u, subscription: user.subscription };
+        return u;
+      })
     );
   }
 };
 
 const handleDateSelection = async (user, event) => {
-  // Get the button position
   const rect = event.currentTarget.getBoundingClientRect();
 
-  // Create an invisible date input
   const input = document.createElement("input");
   input.type = "date";
   input.style.position = "fixed";
-  input.style.left = `${rect.right + -90}px`; // appear to the right of the button
+  input.style.left = `${rect.right + -90}px`;
   input.style.top = `${rect.top}px`;
   input.style.opacity = "0";
   input.style.pointerEvents = "none";
   document.body.appendChild(input);
 
-  // Open date picker after short delay
   setTimeout(() => (input.showPicker ? input.showPicker() : input.click()), 10);
 
   input.onchange = async (e) => {
@@ -296,36 +414,59 @@ const handleDateSelection = async (user, event) => {
       return;
     }
 
-    const confirmUpdate = window.confirm(
-      `Do you want to update ${user.username}'s subdate to ${selectedDate}?`
-    );
+    // Find associated indirect members if this is a Direct member
+    const associatedIndirects = user.membertype === "Direct"
+      ? users.filter(u => u.associatedDirectMember?.trim().toLowerCase() === user.username.trim().toLowerCase())
+      : [];
+
+    const confirmMessage = associatedIndirects.length > 0
+      ? `Do you want to update ${user.username}'s subdate and ${associatedIndirects.length} associated member(s) to ${selectedDate}?`
+      : `Do you want to update ${user.username}'s subdate to ${selectedDate}?`;
+
+    const confirmUpdate = window.confirm(confirmMessage);
 
     if (confirmUpdate) {
       try {
-        // Update UI optimistically
+        // Optimistic UI update for direct member + all associated indirects
         setUsers((prev) =>
-          prev.map((u) =>
-            u.id === user.id ? { ...u, subdate: selectedDate } : u
+          prev.map((u) => {
+            if (u.id === user.id) return { ...u, subdate: selectedDate };
+            if (associatedIndirects.some(ind => ind.id === u.id)) return { ...u, subdate: selectedDate };
+            return u;
+          })
+        );
+
+        // Update the direct member
+        await updateUser(user.id, { subdate: selectedDate }, storedUser.username);
+
+        // Update all associated indirects
+        await Promise.all(
+          associatedIndirects.map(ind =>
+            updateUser(ind.id, { subdate: selectedDate }, storedUser.username)
           )
         );
 
-        // Backend update
-        await updateUser(user.id, { subdate: selectedDate }, storedUser.username);
-        console.log(`Subdate for ${user.username} updated to ${selectedDate}`);
+        toast.success(
+          associatedIndirects.length > 0
+            ? `Subdate updated for ${user.username} and ${associatedIndirects.length} associated member(s)`
+            : `Subdate updated for ${user.username}`
+        );
+
       } catch (err) {
         console.error("Error updating subdate:", err);
-        alert("Failed to update subdate. Please try again.");
+        toast.error("Failed to update subdate");
 
-        // Revert on error
+        // Revert UI
         setUsers((prev) =>
-          prev.map((u) =>
-            u.id === user.id ? { ...u, subdate: user.subdate } : u
-          )
+          prev.map((u) => {
+            if (u.id === user.id) return { ...u, subdate: user.subdate };
+            if (associatedIndirects.some(ind => ind.id === u.id)) return { ...u, subdate: user.subdate };
+            return u;
+          })
         );
       }
     }
 
-    // Cleanup
     document.body.removeChild(input);
   };
 };
@@ -610,6 +751,7 @@ const handleDateSelection = async (user, event) => {
             handleAddChange={handleAddChange}
             addUser={addUser}
             closeAddModal={closeAddModal}
+            allUsers={users}
         />
         )}
 
@@ -621,6 +763,7 @@ const handleDateSelection = async (user, event) => {
             handleEditChange={handleEditChange}
             saveUser={saveUser}
             closeEditModal={closeEditModal}
+            allUsers={users}
         />
         )}
       <ToastContainer position="top-right" autoClose={3000} />
