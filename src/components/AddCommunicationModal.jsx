@@ -20,10 +20,9 @@ export default function AddCommunicationModal({ newComm, handleAddChange, addCom
 
         const allUsers = Array.isArray(userData) ? userData : userData?.data || [];
         
-        // ✅ STRICR FILTER: If Staff, they ONLY get Level 3 users.
         if (isStaff) {
           setUsers(allUsers.filter(u => u.level === "Level 3"));
-          setCommittees([]); // ✅ Staff see ZERO committees
+          setCommittees([]); 
         } else {
           setUsers(allUsers);
           setCommittees(Array.isArray(committeeData) ? committeeData : committeeData?.data || []);
@@ -48,7 +47,6 @@ export default function AddCommunicationModal({ newComm, handleAddChange, addCom
     u.username?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // Filter committees directly if you decide to uncomment or use the search field later
   const filteredCommittees = committees.filter(c =>
     c.name?.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -83,16 +81,19 @@ export default function AddCommunicationModal({ newComm, handleAddChange, addCom
               >
                 <option value="">-- Select Recipient --</option>
                 
-                {/* 1. BROADCAST OPTIONS: Hidden for Staff */}
+                {/* 1. BROADCAST OPTIONS */}
                 {!isStaff && userLevel !== "Level 1" && (
                   <>
                     <option value="0" data-name="All">All Members</option>
                     <option value="0" data-name="All Staff">All Staff</option>
                     <option value="0" data-name="Level 2">Level 2</option>
+                    {/* ✅ New additions */}
+                    <option value="0" data-name="Direct Members">Direct Members</option>
+                    <option value="0" data-name="Indirect Members">Indirect Members</option>
                   </>
                 )}
 
-                {/* 2. COMMITTEES: Hidden for Staff, placed BEFORE users */}
+                {/* 2. COMMITTEES */}
                 {!isStaff && filteredCommittees.length > 0 && (
                   <optgroup label="Sub-Committees">
                     {filteredCommittees.map(committee => (
@@ -103,7 +104,7 @@ export default function AddCommunicationModal({ newComm, handleAddChange, addCom
                   </optgroup>
                 )}
 
-                {/* 3. USERS: If staff, this only contains Level 3 */}
+                {/* 3. USERS */}
                 <optgroup label={isStaff ? "Authorized Admins (Level 3)" : "Users"}>
                   {filteredUsers.map(user => (
                     <option key={user.id} value={user.id} data-name={user.username || user.name}>

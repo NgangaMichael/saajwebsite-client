@@ -5,7 +5,7 @@ import {
   addCommunication as apiAddCommunication,
   updateCommunication,
   deleteCommunication as apiDeleteCommunication,
-  getCommunicationThread, // Ensure this is imported
+  getCommunicationThread,
 } from "../services/communication";
 import AddCommunicationModal from "../components/AddCommunicationModal";
 import EditCommunicationModal from "../components/EditCommunicationModal";
@@ -19,7 +19,6 @@ export default function Communication() {
   const storedUser = JSON.parse(localStorage.getItem("user"));
   const [thread, setThread] = useState([]);
 
-  // Add state
   const [adding, setAdding] = useState(false);
   const [newComm, setNewComm] = useState({
     title: "",
@@ -29,7 +28,6 @@ export default function Communication() {
     sendtoid: "",
   });
 
-  // Edit state
   const [editingComm, setEditingComm] = useState(null);
   const [formData, setFormData] = useState({
     title: "",
@@ -39,10 +37,8 @@ export default function Communication() {
     sendtoid: "",
   });
 
-  // View state
   const [viewingComm, setViewingComm] = useState(null);
 
-  // Fetch communications
   const fetchCommunications = async () => {
     try {
       const data = await getCommunications();
@@ -58,7 +54,6 @@ export default function Communication() {
     fetchCommunications();
   }, []);
 
-  // Delete
   const deleteComm = async (id) => {
     if (!window.confirm("Are you sure you want to delete this communication?")) return;
     try {
@@ -71,7 +66,6 @@ export default function Communication() {
     }
   };
 
-  // Add Logic
   const handleAddChange = (e) => {
     setNewComm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
@@ -79,7 +73,7 @@ export default function Communication() {
   const addComm = async () => {
     try {
       const data = await apiAddCommunication(newComm);
-      setCommunications((prev) => [data.data, ...prev]); // Add to top
+      setCommunications((prev) => [data.data, ...prev]);
       toast.success('Communication sent successfully!');
       closeAddModal();
     } catch (err) {
@@ -99,7 +93,6 @@ export default function Communication() {
     });
   };
 
-  // Edit Logic
   const editComm = (comm) => {
     setEditingComm(comm);
     setFormData({
@@ -133,19 +126,15 @@ export default function Communication() {
     setFormData({ title: "", info: "", sender: storedUser.username, sendto: "", sendtoid: "" });
   };
 
-  // View & Mark Read Logic
   const viewComm = async (comm) => {
     setViewingComm(comm);
     
-    // ✅ Handle LocalStorage Read Status
     const storageKey = `read_msgs_${storedUser.id}`;
     const readMessages = JSON.parse(localStorage.getItem(storageKey)) || [];
 
     if (!readMessages.includes(comm.id)) {
       const updatedReadList = [...readMessages, comm.id];
       localStorage.setItem(storageKey, JSON.stringify(updatedReadList));
-      
-      // ✅ Trigger Sidebar Update
       window.dispatchEvent(new Event("storage")); 
     }
 
@@ -163,32 +152,41 @@ export default function Communication() {
     setThread([]);
   };
 
-  // ✅ Filter and Sort Logic (LATEST ON TOP)
+  // ✅ Filter and Sort Logic (With Direct & Indirect logic)
   const filteredCommunications = communications
-    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)) // Newest First
+    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
     .filter((comm) => {
-  if (storedUser.level === "Level 3") return true;
+      if (storedUser.level === "Level 3") return true;
 
-  // 1. Handle Group Broadcasts by String Name
-  if (comm.sendto === "All Staff") {
-    return storedUser.designation?.toLowerCase() === "staff";
-  }
-  
-  if (comm.sendto === "Level 2") {
-    return storedUser.level === "Level 2";
-  }
+      // 1. Handle Group Broadcasts by String Name
+      if (comm.sendto === "All Staff") {
+        return storedUser.designation?.toLowerCase() === "staff";
+      }
+      
+      if (comm.sendto === "Level 2") {
+        return storedUser.level === "Level 2";
+      }
 
-  if (comm.sendto === "All" || (comm.sendtoid == 0 && comm.sendto === "All")) {
-    return true;
-  }
+      // ✅ New Filter rules matching against membertype database column
+      if (comm.sendto === "Direct Members") {
+        return storedUser.membertype?.toLowerCase() === "direct";
+      }
 
-  // 2. Handle Direct Messages
-  if (comm.sendtoid == storedUser.id || comm.sendto === storedUser.username) return true;
-  if (comm.sendto === storedUser.committee) return true;
-  if (comm.sender === storedUser.username) return true;
+      if (comm.sendto === "Indirect Members") {
+        return storedUser.membertype?.toLowerCase() === "indirect";
+      }
 
-  return false;
-})
+      if (comm.sendto === "All" || (comm.sendtoid == 0 && comm.sendto === "All")) {
+        return true;
+      }
+
+      // 2. Handle Direct Messages
+      if (comm.sendtoid == storedUser.id || comm.sendto === storedUser.username) return true;
+      if (comm.sendto === storedUser.committee) return true;
+      if (comm.sender === storedUser.username) return true;
+
+      return false;
+    })
     .filter((comm) =>
       comm.title?.toLowerCase().includes(searchTerm.toLowerCase())
     );
@@ -243,7 +241,6 @@ export default function Communication() {
               </tr>
             ) : (
               filteredCommunications.map((comm, idx) => {
-                // ✅ Check Read Status per item
                 const readList = JSON.parse(localStorage.getItem(`read_msgs_${storedUser.id}`)) || [];
                 const isRead = readList.includes(comm.id) || comm.sender === storedUser.username;
 
@@ -294,7 +291,6 @@ export default function Communication() {
         </table>
       </div>
 
-      {/* Modals remain the same */}
       {adding && (
         <AddCommunicationModal
           newComm={newComm}
@@ -315,7 +311,6 @@ export default function Communication() {
         />
       )}
 
-      {/* View Modal */}
       {viewingComm && (
         <div className="fixed inset-0 bg-black/40 flex justify-center items-center z-50 p-4">
           <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">

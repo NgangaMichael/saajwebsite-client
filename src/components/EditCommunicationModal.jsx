@@ -13,7 +13,6 @@ export default function EditCommunicationModal({
   const [committees, setCommittees] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
 
-  // ✅ Fetch users & committees on mount
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -39,7 +38,6 @@ export default function EditCommunicationModal({
     fetchData();
   }, []);
 
-  // ✅ Handle dropdown change (both name + id)
   const handleSelectChange = (e) => {
     const selectedOption = e.target.selectedOptions[0];
     const sendtoName = selectedOption.getAttribute("data-name");
@@ -49,7 +47,6 @@ export default function EditCommunicationModal({
     handleEditChange({ target: { name: "sendtoid", value: sendtoId } });
   };
 
-  // ✅ Filter lists based on search
   const filteredUsers = users.filter((u) =>
     u.username?.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -66,7 +63,6 @@ export default function EditCommunicationModal({
         </h5>
 
         <div className="space-y-3">
-          {/* Title */}
           <input
             name="title"
             value={formData.title || ""}
@@ -76,7 +72,6 @@ export default function EditCommunicationModal({
             required
           />
 
-          {/* Info */}
           <textarea
             name="info"
             value={formData.info || ""}
@@ -86,7 +81,6 @@ export default function EditCommunicationModal({
             required
           />
 
-          {/* Search */}
           <input
             type="text"
             placeholder="Search user or committee..."
@@ -95,7 +89,6 @@ export default function EditCommunicationModal({
             className="w-full border p-2 rounded mt-2"
           />
 
-          {/* Dropdown */}
           <select
             name="sendto"
             value={formData.sendtoid || ""}
@@ -105,16 +98,18 @@ export default function EditCommunicationModal({
           >
             <option value="">-- Select recipient --</option>
 
-            {/* Global broadcast options available only for Level 2+ */}
+            {/* Global broadcast options */}
             {userLevel !== "Level 1" && (
               <>
                 <option value="0" data-name="All">All</option>
                 <option value="staff_group" data-name="All Staff">All Staff</option>
                 <option value="level2" data-name="Level 2">Level 2</option>
+                {/* ✅ New additions */}
+                <option value="0" data-name="Direct Members">Direct Members</option>
+                <option value="0" data-name="Indirect Members">Indirect Members</option>
               </>
             )}
 
-            {/* 1. Committees group comes first now */}
             <optgroup label="Sub-Committees">
               {filteredCommittees.map((committee) => (
                 <option key={committee.id} value={committee.id} data-name={committee.name}>
@@ -123,7 +118,6 @@ export default function EditCommunicationModal({
               ))}
             </optgroup>
 
-            {/* 2. Users group follows underneath */}
             {userLevel !== "Level 1" && (
               <optgroup label="Users">
                 {filteredUsers.map((user) => (
@@ -136,7 +130,6 @@ export default function EditCommunicationModal({
           </select>
         </div>
 
-        {/* Buttons */}
         <div className="flex justify-end gap-3 mt-4">
           <button
             onClick={closeEditModal}
