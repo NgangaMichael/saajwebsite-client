@@ -242,45 +242,66 @@ export default function Homedocs() {
       <hr />
       
       <div className="row g-4">
-        {folders.map((folder, index) => (
-          <div key={index} className="col-12 col-sm-6 col-md-4">
-            <div 
-              className="card h-100 text-center border-0 shadow-sm hover-shadow position-relative" 
-              style={{ cursor: 'pointer', transition: 'all 0.3s' }}
-              onClick={() => openFolder(folder.foldername)}
-            >
-              {/* ✅ ACTION ICONS (Hidden for Level 1) */}
-              {userLevel !== "Level 1" && (
-                <div className="position-absolute top-0 end-0 p-2 d-flex gap-2">
-                  <button 
-                    className="btn btn-light btn-sm text-primary shadow-sm p-1"
-                    onClick={(e) => openEditModal(e, folder)}
-                  >
-                    <Pencil size={14} />
-                  </button>
-                  <button 
-                    className="btn btn-light btn-sm text-danger shadow-sm p-1"
-                    onClick={(e) => handleDeleteFolder(e, folder.id, folder.foldername)}
-                  >
-                    <Trash2 size={14} />
-                  </button>
-                </div>
-              )}
+        {/* Change folders.map to filteredFolders.map */}
+        {folders
+          .filter((folder) => {
+            // Level 3 and Level 2 can see all folders
+            if (userLevel === "Level 3" || userLevel === "Level 2") return true;
 
-              <div className="card-body py-5">
-                <div className="d-flex justify-content-center mb-3">
-                  <Folder size={80} className="text-warning" fill="#ffc107" fillOpacity={0.2} />
+            // Level 1 can ONLY see the folder if it contains at least one active document
+            if (userLevel === "Level 1") {
+              const hasVisibleDocs = docs.some(
+                (doc) => doc.type === folder.foldername && doc.status === 1
+              );
+              return hasVisibleDocs;
+            }
+
+            return false;
+          })
+          .map((folder, index) => (
+            <div key={index} className="col-12 col-sm-6 col-md-4">
+              <div 
+                className="card h-100 text-center border-0 shadow-sm hover-shadow position-relative" 
+                style={{ cursor: 'pointer', transition: 'all 0.3s' }}
+                onClick={() => openFolder(folder.foldername)}
+              >
+                {/* ✅ ACTION ICONS (Hidden for Level 1) */}
+                {userLevel !== "Level 1" && (
+                  <div className="position-absolute top-0 end-0 p-2 d-flex gap-2">
+                    <button 
+                      className="btn btn-light btn-sm text-primary shadow-sm p-1"
+                      onClick={(e) => openEditModal(e, folder)}
+                    >
+                      <Pencil size={14} />
+                    </button>
+                    <button 
+                      className="btn btn-light btn-sm text-danger shadow-sm p-1"
+                      onClick={(e) => handleDeleteFolder(e, folder.id, folder.foldername)}
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+                )}
+
+                <div className="card-body py-5">
+                  <div className="d-flex justify-content-center mb-3">
+                    <Folder size={80} className="text-warning" fill="#ffc107" fillOpacity={0.2} />
+                  </div>
+                  <h5 className="card-title text-dark mb-0 text-truncate px-3">
+                    {folder.foldername}
+                  </h5>
+                  
+                  {/* Optional: Clean up and show document counter based on user permissions */}
+                  {/* <p className="text-muted small mt-2">
+                    {userLevel === "Level 1" 
+                      ? `${docs.filter(d => d.type === folder.foldername && d.status === 1).length} Documents`
+                      : `${docs.filter(d => d.type === folder.foldername).length} Documents`
+                    }
+                  </p> */}
                 </div>
-                <h5 className="card-title text-dark mb-0 text-truncate px-3">
-                  {folder.foldername}
-                </h5>
-                <p className="text-muted small mt-2">
-                  {docs.filter(d => d.type === folder.foldername).length} Documents
-                </p>
               </div>
             </div>
-          </div>
-        ))}
+          ))}
       </div>
 
       <style jsx>{`
