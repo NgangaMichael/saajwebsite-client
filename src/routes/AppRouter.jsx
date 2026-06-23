@@ -20,6 +20,8 @@ import SurveyRespond from "../pages/SurveyRespond";
 import SurveyAnalytics from "../pages/SurveyAnalytics";
 import Notfoundpage from "../pages/Notfoundpage";
 import Services from "../pages/Services";
+import Tasks from "../pages/Tasks";
+import Bookings from "../pages/Bookings";
 
 function PrivateRoute({ children }) {
   // Better: check token instead of "auth"
@@ -56,6 +58,8 @@ export default function AppRouter() {
           <Route path="profile" element={<Profile />} />
           <Route path="staff" element={<Staff />} />
           <Route path="survey" element={<Survey />} />
+          <Route path="tasks" element={<Tasks />} />
+          <Route path="bookings" element={<Bookings />} />
           <Route path="service" element={<Services />} />
           <Route path="survey/respond/:id" element={<SurveyRespond />} />
           <Route path="survey/analytics/:id" element={<SurveyAnalytics />} />

@@ -5,7 +5,8 @@ import { getCommunications } from "../services/communication";
 import { getServices } from "../services/service";
 import {
   Users, Puzzle, FileText, Layers, ChevronLeft, ChevronRight,
-  LogOut, MessageSquare, Activity, Settings, Users2, List, Server
+  LogOut, MessageSquare, Activity, Settings, Users2, List, Server,
+  Calendar, CheckSquare
 } from "lucide-react";
 
 export default function Dashboard() {
@@ -30,6 +31,8 @@ export default function Dashboard() {
     { to: "staff", label: "Staff", icon: <Users2 size={20} />, color: "#b80c0cff" },
     { to: "service", label: "Services", icon: <Server size={20} />, color: "rgb(12, 167, 184)" },
     { to: "survey", label: "Survey", icon: <List size={20} />, color: "#b80c6eff" },
+    { to: "tasks", label: "Tasks", icon: <CheckSquare size={20} />, color: "#f59e0b" },
+    { to: "bookings", label: "Bookings", icon: <Calendar size={20} />, color: "#228cc5ff" },
   ];
 
   const isStaffMember = storedUser?.staff === "yes";
@@ -39,9 +42,9 @@ export default function Dashboard() {
     navItems = baseNavItems.filter((item) => ["profile", "staff", "communication"].includes(item.to));
   } else {
     if (userLevel === "Level 1") {
-      navItems = baseNavItems.filter((item) => ["profile", "homedocs", "committees", "communication", "survey", "service"].includes(item.to));
+      navItems = baseNavItems.filter((item) => ["profile", "homedocs", "committees", "communication", "survey", "service", "tasks", "bookings"].includes(item.to));
     } else if (userLevel === "Level 2") {
-      navItems = baseNavItems.filter((item) => ["profile", "homedocs", "communication", "committees", "subcommittees", "survey"].includes(item.to));
+      navItems = baseNavItems.filter((item) => ["profile", "homedocs", "communication", "committees", "subcommittees", "survey", "tasks", "bookings"].includes(item.to));
     } else if (userLevel === "Level 3") {
       navItems = baseNavItems;
     }
