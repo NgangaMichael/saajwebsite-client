@@ -21,6 +21,15 @@ export default function AddServiceModal({ newService, handleAddChange, handleFil
           onChange={handleAddChange}
         />
 
+        <input
+          type="email"
+          name="email"
+          className="form-control mb-3"
+          placeholder="Email (Optional)"
+          value={newService.email || ""}
+          onChange={handleAddChange}
+        />
+
         <div className="border p-3 rounded mb-3 bg-light">
           <label className="block mb-1 font-bold text-sm">Service Content</label>
           <input

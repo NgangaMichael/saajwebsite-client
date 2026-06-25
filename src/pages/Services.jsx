@@ -24,6 +24,7 @@ export default function Services() {
     servicename: "",
     description: "",
     servicelink: "",
+    email: "",
     file: null, // New state for file
   });
 
@@ -32,6 +33,7 @@ export default function Services() {
     servicename: "",
     description: "",
     servicelink: "",
+    email: ""
   });
 
   const fetchServices = async () => {
@@ -89,6 +91,7 @@ export default function Services() {
     const formData = new FormData();
     formData.append("servicename", newService.servicename);
     formData.append("description", newService.description);
+    formData.append("email", newService.email || "");
     
     if (newService.file) {
       formData.append("file", newService.file); // The backend will save this and return a path
@@ -137,7 +140,8 @@ const formatUrl = (path) => {
     servicename: "", 
     description: "", 
     servicelink: "", 
-    file: null // Ensure file is cleared
+    email: "",
+    file: null
   });
 };
 
@@ -147,6 +151,7 @@ const formatUrl = (path) => {
       servicename: service.servicename || "",
       description: service.description || "",
       servicelink: service.servicelink || "",
+      email: service.email || "",
     });
   };
 
@@ -159,6 +164,7 @@ const formatUrl = (path) => {
     const dataToSend = new FormData();
     dataToSend.append("servicename", formData.servicename);
     dataToSend.append("description", formData.description);
+    dataToSend.append("email", formData.email || "");
     
     // Check if we are sending a new file or a link
     if (formData.file) {
@@ -243,6 +249,17 @@ const formatUrl = (path) => {
                       Go to service
                       <ExternalLink size={16} />
                     </a>
+
+                    {service.email && (
+                      <a
+                        // href={`mailto:${service.email}`}
+                        href={`https://mail.google.com/mail/?view=cm&fs=1&to=${service.email}&su=Service Inquiry`}
+                        // href={`mailto:${service.email}?subject=Service Inquiry&body=Hello,%0D%0A%0D%0AI would like to inquire about your service.`}
+                        className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md transition-colors text-sm"
+                      >
+                        Email Service
+                      </a>
+                    )}
                     
                     {storedUser?.level !== "Level 1" && (
                       <>

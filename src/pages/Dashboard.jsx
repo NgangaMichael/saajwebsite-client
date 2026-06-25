@@ -42,7 +42,7 @@ export default function Dashboard() {
     navItems = baseNavItems.filter((item) => ["profile", "staff", "communication"].includes(item.to));
   } else {
     if (userLevel === "Level 1") {
-      navItems = baseNavItems.filter((item) => ["profile", "homedocs", "committees", "communication", "survey", "service", "tasks", "bookings"].includes(item.to));
+      navItems = baseNavItems.filter((item) => ["profile", "homedocs", "committees", "communication", "survey", "service", "bookings"].includes(item.to));
     } else if (userLevel === "Level 2") {
       navItems = baseNavItems.filter((item) => ["profile", "homedocs", "communication", "committees", "subcommittees", "survey", "tasks", "bookings"].includes(item.to));
     } else if (userLevel === "Level 3") {

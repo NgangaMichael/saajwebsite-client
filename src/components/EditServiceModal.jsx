@@ -21,6 +21,16 @@ export default function EditServiceModal({ formData, handleEditChange, handleFil
           onChange={handleEditChange}
         />
 
+        <label className="small font-bold">Email</label>
+        <input
+          type="email"
+          name="email"
+          className="form-control mb-3"
+          value={formData.email || ""}
+          onChange={handleEditChange}
+          placeholder="Email (Optional)"
+        />
+
         <div className="border p-3 rounded mb-3 bg-light">
           <label className="block mb-1 font-bold text-sm">Update Content</label>
           <input
