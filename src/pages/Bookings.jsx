@@ -13,6 +13,8 @@ import {
   deleteFacility 
 } from "../services/bookings"; 
 import { getCommittees } from "../services/committees";
+import { getUsers } from "../services/users"; 
+
 import BookingModal from "../components/BookingModal";
 import FacilityModal from "../components/FacilityModal";
 
@@ -21,6 +23,7 @@ export default function Bookings() {
   const [bookings, setBookings] = useState([]);
   const [facilities, setFacilities] = useState([]);
   const [committees, setCommittees] = useState([]);
+  const [staffList, setStaffList] = useState([]); 
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [selectedBooking, setSelectedBooking] = useState(null); 
@@ -29,24 +32,32 @@ export default function Bookings() {
   const loggedInUser = JSON.parse(localStorage.getItem("user"));
   const isLevel3 = loggedInUser?.level === "Level 3";
   const isLevel2 = loggedInUser?.level === "Level 2";
+  
+  // Check if the logged-in user is a Staff member
+  const isStaffDesignation = loggedInUser?.designation === "Staff";
 
-  // Normalize logged-in user's committee for strict cross-matching
   const userCommitteeNorm = loggedInUser?.committee?.toLowerCase() || loggedInUser?.subCommittee?.toLowerCase() || "";
-
-  // Global asset authority check: Level 3 OR any Level 2 user assigned to an active committee
   const hasFacilityAssetAuthority = isLevel3 || (isLevel2 && userCommitteeNorm.trim() !== "");
 
   const loadData = async () => {
     try {
-      const [bookingsData, facilitiesRes, committeesRes] = await Promise.all([
+      const [bookingsData, facilitiesRes, committeesRes, usersRes] = await Promise.all([
         getBookings(),
         getFacilities(),
-        getCommittees()
+        getCommittees(),
+        getUsers()
       ]);
 
       setBookings(bookingsData.data || bookingsData);
       setFacilities(facilitiesRes.data || facilitiesRes);
       setCommittees(committeesRes.data || committeesRes);
+
+      const rawUsers = usersRes.data || usersRes;
+      const filteredStaff = Array.isArray(rawUsers) 
+        ? rawUsers.filter(u => u.designation === "Staff") 
+        : [];
+      setStaffList(filteredStaff);
+
     } catch (err) {
       console.error("Error loading panel data:", err);
       toast.error("Failed to load dashboard context records.");
@@ -104,7 +115,6 @@ export default function Bookings() {
   const handleSaveFacility = async (facilityData) => {
     const incomingCommittee = facilityData.committee?.toLowerCase() || "";
     
-    // ✅ Loosened constraint validation using partial inclusion (.includes)
     if (isLevel2 && !userCommitteeNorm.includes(incomingCommittee) && !incomingCommittee.includes(userCommitteeNorm)) {
       toast.error(`Unauthorized! You can only configure facilities under your assigned "${loggedInUser?.committee || loggedInUser?.subCommittee}" scope.`);
       return;
@@ -252,7 +262,6 @@ export default function Bookings() {
                     const facilityCommittee = matchedFacility?.committee?.toLowerCase() || "";
                     const bookingDirectCommittee = (b.committeeTarget || b.committee || "").toLowerCase();
 
-                    // ✅ Changed to substring matching (.includes) to gracefully handle "Sports" vs "Sports and Community..." mismatches
                     const isRowCommitteeManager = 
                       userCommitteeNorm && 
                       (userCommitteeNorm.includes(facilityCommittee) || 
@@ -260,7 +269,18 @@ export default function Bookings() {
                        userCommitteeNorm.includes(bookingDirectCommittee) || 
                        bookingDirectCommittee.includes(userCommitteeNorm));
 
-                    const hasFullRowAccess = isLevel3 || (isLevel2 && isRowCommitteeManager);
+                    // Check if the user is the assigned staff member for this facility
+                    const isAssignedFacilityStaff = 
+                      isStaffDesignation && 
+                      matchedFacility?.staff && 
+                      matchedFacility.staff.toLowerCase() === loggedInUser?.username?.toLowerCase();
+
+                    // Rule for full row access (Edit, Accept, Decline)
+                    const hasFullRowAccess = isLevel3 || (isLevel2 && isRowCommitteeManager) || isAssignedFacilityStaff;
+
+                    // STRICT RULE: If they are a Staff member, they can ONLY see actions if they are assigned to this facility OR if they created the booking.
+                    // Otherwise (Level 2 & Level 3), they always see actions.
+                    const canSeeAnyActions = !isStaffDesignation || isAssignedFacilityStaff || isOwner;
 
                     return (
                       <tr key={b.id || idx}>
@@ -289,31 +309,37 @@ export default function Bookings() {
                         </td>
                         <td>
                           <div className="d-flex justify-content-center gap-2">
-                            <button
-                              onClick={() => setSelectedBooking(b)}
-                              className="btn btn-outline-secondary btn-sm d-flex align-items-center gap-1"
-                              data-bs-toggle="modal"
-                              data-bs-target="#bookingModal"
-                            >
-                              <Pencil size={14} /> 
-                              {isPending && (isOwner || hasFullRowAccess) ? "Edit" : "View"}
-                            </button>
-
-                            {hasFullRowAccess && isPending && (
+                            {canSeeAnyActions ? (
                               <>
-                                <button 
-                                  onClick={() => handleStatusUpdate(b.id, "Approved")} 
-                                  className="btn btn-success btn-sm d-flex align-items-center gap-1"
+                                <button
+                                  onClick={() => setSelectedBooking(b)}
+                                  className="btn btn-outline-secondary btn-sm d-flex align-items-center gap-1"
+                                  data-bs-toggle="modal"
+                                  data-bs-target="#bookingModal"
                                 >
-                                  <Check size={14} /> Accept
+                                  <Pencil size={14} /> 
+                                  {isPending && (isOwner || hasFullRowAccess) ? "Edit" : "View"}
                                 </button>
-                                <button 
-                                  onClick={() => handleStatusUpdate(b.id, "Declined")} 
-                                  className="btn btn-danger btn-sm d-flex align-items-center gap-1"
-                                >
-                                  <X size={14} /> Decline
-                                </button>
+
+                                {hasFullRowAccess && isPending && (
+                                  <>
+                                    <button 
+                                      onClick={() => handleStatusUpdate(b.id, "Approved")} 
+                                      className="btn btn-success btn-sm d-flex align-items-center gap-1"
+                                    >
+                                      <Check size={14} /> Accept
+                                    </button>
+                                    <button 
+                                      onClick={() => handleStatusUpdate(b.id, "Declined")} 
+                                      className="btn btn-danger btn-sm d-flex align-items-center gap-1"
+                                    >
+                                      <X size={14} /> Decline
+                                    </button>
+                                  </>
+                                )}
                               </>
+                            ) : (
+                              <span className="text-muted small italic">Not Allowed</span>
                             )}
                           </div>
                         </td>
@@ -337,21 +363,20 @@ export default function Bookings() {
                 <th>Asset Identity</th>
                 <th>Physical Location Setup</th>
                 <th>Oversight Committee Authority</th>
+                <th>Allocated Staff Column</th>
                 {hasFacilityAssetAuthority && <th className="text-center">Administration Actions</th>}
               </tr>
             </thead>
             <tbody>
               {facilities.length === 0 ? (
                 <tr>
-                  <td colSpan={hasFacilityAssetAuthority ? 5 : 4} className="text-center text-muted italic py-3">
+                  <td colSpan={hasFacilityAssetAuthority ? 6 : 5} className="text-center text-muted italic py-3">
                     No operating facilities registered. Click "Create Facility" to add one.
                   </td>
                 </tr>
               ) : (
                 facilities.map((f, idx) => {
                   const facilityCommittee = f.committee?.toLowerCase() || "";
-                  
-                  // ✅ Level 3 can edit anything; Level 2 uses sub-string cross checking
                   const canManageAsset = isLevel3 || 
                     (isLevel2 && (userCommitteeNorm.includes(facilityCommittee) || facilityCommittee.includes(userCommitteeNorm)));
 
@@ -361,6 +386,13 @@ export default function Bookings() {
                       <td><strong>{f.name}</strong></td>
                       <td>{f.location}</td>
                       <td><span className="badge bg-info text-dark">{f.committee}</span></td>
+                      <td>
+                        {f.staff ? (
+                          <span className="fw-semibold text-primary">{f.staff}</span>
+                        ) : (
+                          <span className="text-muted small italic">Vacant</span>
+                        )}
+                      </td>
                       {hasFacilityAssetAuthority && (
                         <td>
                           <div className="d-flex justify-content-center gap-2">
@@ -406,6 +438,7 @@ export default function Bookings() {
       <FacilityModal 
         facility={selectedFacility} 
         committees={committees} 
+        staffList={staffList} 
         onSave={handleSaveFacility} 
         onClose={() => closeModal("facilityModal")} 
         submitting={submitting} 

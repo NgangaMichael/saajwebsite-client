@@ -39,7 +39,7 @@ export default function Dashboard() {
   let navItems = [];
 
   if (isStaffMember) {
-    navItems = baseNavItems.filter((item) => ["profile", "staff", "communication"].includes(item.to));
+    navItems = baseNavItems.filter((item) => ["profile", "staff", "communication", "bookings"].includes(item.to));
   } else {
     if (userLevel === "Level 1") {
       navItems = baseNavItems.filter((item) => ["profile", "homedocs", "committees", "communication", "survey", "service", "bookings"].includes(item.to));

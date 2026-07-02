@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { Building } from "lucide-react";
 
-export default function FacilityModal({ facility, committees = [], onSave, onClose, submitting }) {
-  const [form, setForm] = useState({ name: "", location: "", committee: "" });
+// 1. Destructure staffList from incoming props (defaults to empty array)
+export default function FacilityModal({ facility, committees = [], staffList = [], onSave, onClose, submitting }) {
+  // 2. Add the 'staff' field to the initial state
+  const [form, setForm] = useState({ name: "", location: "", committee: "", staff: "" });
 
   // Sync component internal form parameters state
   useEffect(() => {
@@ -11,12 +13,14 @@ export default function FacilityModal({ facility, committees = [], onSave, onClo
         name: facility.name || "",
         location: facility.location || "",
         committee: facility.committee || (committees[0]?.name || ""),
+        staff: facility.staff || "", // 3. Populate existing staff allocations when editing
       });
     } else {
       setForm({
         name: "",
         location: "",
         committee: committees[0]?.name || "",
+        staff: "", // Clear selection for new facility forms
       });
     }
   }, [facility, committees]);
@@ -66,7 +70,26 @@ export default function FacilityModal({ facility, committees = [], onSave, onClo
                   )}
                 </select>
               </div>
+
+              {/* --- NEW: CHOOSE ALLOCATED STAFF RESOURCE DROPDOWN --- */}
+              <div className="mb-3">
+                <label className="form-label fw-semibold text-primary">Assign Staff Member</label>
+                <select 
+                  name="staff" 
+                  className="form-select border-primary" 
+                  value={form.staff} 
+                  onChange={handleChange}
+                >
+                  <option value="">-- No Staff Allocated (Vacant) --</option>
+                  {staffList.map((s) => (
+                    <option key={s.id || s._id} value={s.username}>
+                      {s.username}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
+            
             <div className="modal-footer">
               <button type="button" className="btn btn-secondary btn-sm" data-bs-dismiss="modal" onClick={onClose}>Cancel</button>
               <button type="submit" className="btn btn-success btn-sm" disabled={submitting || committees.length === 0}>
